@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "技元",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -11,24 +11,24 @@
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "欢迎",
         "pages": [
-          "index",
-          "quickstart"
+          "index"
+        ]
+      },
+      {
+        "group": "用户入门",
+        "pages": [
+          "user-guide/start/quickstart"
         ]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "anchor": "模型广场",
+          "href": "https://tokener.jeekmind.com/pricing",
           "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
         }
       ]
     }
@@ -40,33 +40,24 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@mintlify.com"
+        "label": "技灵 AI 营销助手",
+        "href": "https://help.jeekmind.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "使用技元",
+      "href": "https://tokener.jeekmind.com"
     }
   },
   "contextual": {
     "options": [
       "copy",
       "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
       "mcp",
-      "cursor",
       "vscode"
     ]
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
   }
 }
