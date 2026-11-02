@@ -29,9 +29,10 @@
         "dropdown": "模型调用文档",
         "icon": "book-open",
         "directory": "card",
-        "anchors": [
+        "pages": [
           {
-            "anchor": "通义万相"
+            "group": "通义万相",
+            "pages": ["model-reference/mu-wan3"]
           }
         ]
       }
