@@ -9,17 +9,34 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "pages": [
+    "dropdowns": [
       {
-        "group": "欢迎",
+        "dropdown": "使用文档",
+        "icon": "book-open",
+        "directory": "card",
         "pages": [
-          "index"
+          {
+            "group": "欢迎",
+            "pages": [
+              "index"
+            ]
+          },
+          {
+            "group": "用户入门",
+            "pages": [
+              "user-guide/start/quickstart"
+            ]
+          }
         ]
       },
       {
-        "group": "用户入门",
-        "pages": [
-          "user-guide/start/quickstart"
+        "dropdown": "模型调用文档",
+        "icon": "book-open",
+        "directory": "card",
+        "anchors": [
+          {
+            "anchor": "通义万相"
+          }
         ]
       }
     ],
