@@ -17,15 +17,11 @@
         "pages": [
           {
             "group": "欢迎",
-            "pages": [
-              "index"
-            ]
+            "pages": ["index"]
           },
           {
             "group": "用户入门",
-            "pages": [
-              "user-guide/start/quickstart"
-            ]
+            "pages": ["user-guide/start/quickstart"]
           }
         ]
       },
@@ -68,13 +64,7 @@
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "mcp",
-      "vscode"
-    ]
+    "options": ["copy", "view", "mcp", "vscode"]
   },
-  "footer": {
-  }
+  "footer": {}
 }
