@@ -31,6 +31,10 @@
         "directory": "card",
         "pages": [
           {
+            "group": "通用接口",
+            "pages": ["api-reference/generation"]
+          },
+          {
             "group": "通义万相",
             "pages": ["model-reference/mu-wan3"]
           }

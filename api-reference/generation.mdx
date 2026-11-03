@@ -1,0 +1,225 @@
+---
+title: "模型与生成任务"
+description: "获取模型列表、提交生成任务，以及查询生成结果和本次消费。"
+---
+
+你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，再使用任务 ID 查询生成结果和本次消费。
+
+<Note>
+  本页为接口文档草稿。模型列表和视频查询的返回示例已补充并脱敏。
+</Note>
+
+## 调用前准备
+
+接口基础地址为 `https://tokener.jeekmind.com`。你可以参考[快速入门](/user-guide/start/quickstart)获取 API 密钥。
+
+调用时，请替换示例中的占位符：
+
+| 占位符 | 说明 |
+| --- | --- |
+| `YOUR_API_KEY` | 你的 API 密钥，放在 `Authorization: Bearer` 后面 |
+| `YOUR_TASK_ID` | 提交生成任务后获得的任务 ID |
+
+## 1. 模型列表
+
+### 请求示例
+
+```bash
+curl --location 'https://tokener.jeekmind.com/v1/models' \
+  --header 'Authorization: Bearer YOUR_API_KEY'
+```
+
+
+### 请求头
+
+| 请求头 | 说明 |
+| --- | --- |
+| `Authorization` | 格式为 `Bearer YOUR_API_KEY` |
+
+### 返回示例
+
+```json
+{
+  "data": [
+    {
+      "id": "gxc-doubao-seedance-2-5-260628",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "task plugin",
+      "supported_endpoint_types": [
+        "openai",
+        "video-generation"
+      ]
+    },
+    {
+      "id": "jm-doubao-seedream-5-0",
+      "object": "model",
+      "created": 1626777600,
+      "owned_by": "task plugin",
+      "supported_endpoint_types": [
+        "openai",
+        "image-generation",
+        "jeekmind-task"
+      ]
+    }
+  ],
+  "object": "list",
+  "success": true
+}
+```
+
+### 返回字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `success` | 示例中为 `true` |
+| `object` | 列表对象，示例中为 `list` |
+| `data` | 模型列表 |
+| `data[].id` | 模型标识，提交任务时用作 `model` |
+| `data[].object` | 对象类型，示例中为 `model` |
+| `data[].created` | 模型创建时间戳 |
+| `data[].owned_by` | 模型归属信息 |
+| `data[].supported_endpoint_types` | 支持的接口类型标识；具体调用路径和参数请参考对应接口文档 |
+
+## 2. 请求生成任务（图、视频）
+
+### 视频生成
+
+`POST /v1/videos`
+
+以下示例使用 `gxc-doubao-seedance-2-5-260628` 模型，提交一段飞机在云层中穿行的视频生成任务。
+
+```bash
+curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer YOUR_API_KEY' \
+  --data '{
+    "model": "gxc-doubao-seedance-2-5-260628",
+    "prompt": "飞机在云层中穿行",
+    "seconds": 4,
+    "resolution": "480p"
+  }'
+```
+
+### 示例请求参数
+
+| 参数 | 示例类型 | 示例值 | 说明 |
+| --- | --- | --- | --- |
+| `model` | string | `gxc-doubao-seedance-2-5-260628` | 模型标识 |
+| `prompt` | string | `飞机在云层中穿行` | 描述你希望生成的内容 |
+| `seconds` | number | `4` | 视频时长，单位为秒 |
+| `resolution` | string | `480p` | 视频分辨率，按示例保留大小写 |
+
+参数是否必填、默认值和可选范围待确认。
+
+## 3. 查询结果与本次消费
+
+`GET /v1/video/generations/{task_id}`
+
+将 `YOUR_TASK_ID` 替换为提交任务后获得的任务 ID。
+
+```bash
+curl --location --request GET 'https://tokener.jeekmind.com/v1/video/generations/YOUR_TASK_ID' \
+  --header 'Authorization: Bearer YOUR_API_KEY'
+```
+
+### 路径参数
+
+| 参数 | 说明 |
+| --- | --- |
+| `task_id` | 你需要查询的任务 ID |
+
+### 返回示例
+
+以下为成功任务的脱敏示例。用户、记录、渠道、分组、任务标识和时间已替换，消费与用量已改为演示值，上游资源地址使用 `example.com`。示例保留原始字段结构和类型，演示链接不可用于下载。此响应独立于上方请求示例，不表示请求 `480p` 会返回 `720p`。
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "id": 10001,
+    "created_at": 1700000000,
+    "updated_at": 1700000300,
+    "task_id": "task_example",
+    "platform": "gxc",
+    "user_id": 10002,
+    "group": "example_group",
+    "channel_id": 10003,
+    "quota": 100000,
+    "action": "",
+    "status": "SUCCESS",
+    "fail_reason": "",
+    "result_url": "https://tokener.jeekmind.com/v1/videos/task_example/content",
+    "submit_time": 1700000000,
+    "start_time": 1700000050,
+    "finish_time": 1700000300,
+    "progress": "100",
+    "properties": {
+      "input": "",
+      "upstream_model_name": "doubao-seedance-2-5-260628",
+      "origin_model_name": "gxc-doubao-seedance-2-5-260628"
+    }
+  }
+}
+```
+
+### 结果字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `code` | 查询响应码，示例中为 `success`；任务状态请查看 `data.status` |
+| `data.task_id` | 平台任务 ID，用于查询；示例中为 `task_example` |
+| `data.status` | 平台任务状态，示例中 `SUCCESS` 表示生成成功 |
+| `data.progress` | 平台任务进度，示例为字符串 `"100"` |
+| `data.result_url` | 平台返回的结果地址 |
+| `data.fail_reason` | 失败原因，成功示例中为空字符串 |
+| `data.submit_time` / `data.start_time` / `data.finish_time` | 提交、开始和完成的时间戳 |
+
+### 本次消费
+
+| 字段 | 示例值（演示） | 说明 |
+| --- | --- | --- |
+| `data.quota` | `100000` | 本次消费的额度，按下方公式换算为显示币种的金额 |
+
+#### 获取换算配置
+
+请求 `GET /api/status`，读取 `quota_per_unit`、`quota_display_type` 和 `usd_exchange_rate`。
+
+```bash
+curl --location 'https://tokener.jeekmind.com/api/status' \
+  --header 'Authorization: Bearer YOUR_API_KEY'
+```
+
+以下仅摘录返回中与换算有关的字段，省略其他配置及外层结构：
+
+```json
+{
+  "quota_display_type": "CNY",
+  "quota_per_unit": 500000,
+  "usd_exchange_rate": 7
+}
+```
+
+| 字段 | 示例值 | 说明 |
+| --- | --- | --- |
+| `quota_per_unit` | `500000` | 每单位基础金额对应的额度，作为换算除数 |
+| `quota_display_type` | `CNY` | 换算后的显示币种，示例为人民币 |
+| `usd_exchange_rate` | `7` | 从基础金额换算为显示币种金额的汇率，作为换算乘数 |
+
+#### 计算本次消费
+
+将任务查询返回的 `data.quota` 除以 `quota_per_unit`，再乘以 `usd_exchange_rate`：
+
+```text
+本次消费金额 = data.quota / quota_per_unit × usd_exchange_rate
+金额币种 = quota_display_type
+```
+
+以上方任务查询中的演示额度 `100000` 为例，使用示例配置计算：
+
+```text
+100000 / 500000 × 7 = 1.4 CNY
+```
+
+即本次消费为人民币 `1.4` 元。请使用 `/api/status` 返回的实际配置计算，示例中的额度、换算比例和汇率仅用于演示。
