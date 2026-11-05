@@ -1,9 +1,9 @@
 ---
 title: "模型与生成任务"
-description: "获取模型列表、提交生成任务，以及查询生成结果和本次消费。"
+description: "获取模型列表、提交生成任务、查询任务状态，以及查询用量和本次消费。"
 ---
 
-你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，再使用任务 ID 查询生成结果和本次消费。
+你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，使用任务 ID 查询状态并下载视频，再查询用量和本次消费。
 
 <Note>
   本页为接口文档草稿。模型列表和视频查询的返回示例已补充并脱敏。
@@ -112,9 +112,54 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
 
 参数是否必填、默认值和可选范围待确认。
 
-## 3. 查询结果与本次消费
+## 3. 查询视频任务
+
+`GET /v1/videos/{id}`
+
+将 `YOUR_TASK_ID` 替换为提交视频任务返回的 `id`，使用同一 API 密钥查询任务状态和进度。完整参数说明见[查询视频任务](/api-reference/videos/retrieve)。
+
+### 请求示例
+
+```bash
+curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_ID' \
+  --header 'Authorization: Bearer YOUR_API_KEY'
+```
+
+### 返回示例
+
+以下为任务完成时的演示响应：
+
+```json
+{
+  "id": "task_example",
+  "object": "video",
+  "model": "gxc-doubao-seedance-2-5-260628",
+  "status": "completed",
+  "progress": 100,
+  "created_at": 1700000000,
+  "completed_at": 1700000300
+}
+```
+
+### 返回字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `id` | 公开任务 ID，用于后续查询和下载 |
+| `object` | 对象类型，固定为 `video` |
+| `model` | 客户端请求的模型名称 |
+| `status` | 任务状态：`queued`（排队中）、`in_progress`（进行中）、`completed`（已完成）、`failed`（失败）或 `unknown`（未知） |
+| `progress` | 任务进度，整数类型 |
+| `created_at` | 创建时间，Unix 秒级时间戳 |
+| `completed_at` | 完成时间，Unix 秒级时间戳；任务未完成时可能省略 |
+
+任务未完成时，可继续使用同一 `id` 查询。`status` 为 `completed` 后，通过 `GET /v1/videos/{id}/content` [下载视频](/api-reference/videos/content)。
+
+## 4. 查询用量与本次消费
 
 `GET /v1/video/generations/{task_id}`
+
+此接口用于查询任务用量和本次消费，返回的 `data.quota` 为消费额度。任务状态和视频下载请参考上一步的通用接口。
 
 将 `YOUR_TASK_ID` 替换为提交任务后获得的任务 ID。
 
@@ -164,7 +209,7 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/video/generations
 }
 ```
 
-### 结果字段
+### 任务记录字段
 
 | 字段 | 说明 |
 | --- | --- |
@@ -209,14 +254,14 @@ curl --location 'https://tokener.jeekmind.com/api/status' \
 
 #### 计算本次消费
 
-将任务查询返回的 `data.quota` 除以 `quota_per_unit`，再乘以 `usd_exchange_rate`：
+将用量查询返回的 `data.quota` 除以 `quota_per_unit`，再乘以 `usd_exchange_rate`：
 
 ```text
 本次消费金额 = data.quota / quota_per_unit × usd_exchange_rate
 金额币种 = quota_display_type
 ```
 
-以上方任务查询中的演示额度 `100000` 为例，使用示例配置计算：
+以上方用量查询中的演示额度 `100000` 为例，使用示例配置计算：
 
 ```text
 100000 / 500000 × 7 = 1.4 CNY
