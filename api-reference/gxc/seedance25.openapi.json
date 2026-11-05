@@ -1,0 +1,247 @@
+{
+  "openapi": "3.1.0",
+  "servers": [
+    {
+      "url": "https://tokener.jeekmind.com"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "info": {
+    "title": "GXC Seedance 2.5",
+    "version": "0.1.0",
+    "description": "Schema 导出预览，仅描述正常响应，错误响应暂未建模。"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "技元 API 密钥"
+      }
+    },
+    "schemas": {
+      "VideoTask": {
+        "title": "OpenAIVideoResponse",
+        "description": "标准视频任务对象。保存 id，用于查询任务和下载视频。",
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "model",
+          "status",
+          "progress",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "网关公开任务 ID，用于后续查询和下载"
+          },
+          "object": {
+            "const": "video",
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "客户端请求的模型名称"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in_progress",
+              "completed",
+              "failed",
+              "unknown"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "任务创建时间，Unix 秒级时间戳"
+          },
+          "completed_at": {
+            "type": "integer",
+            "description": "完成时间，Unix 秒级时间戳；创建响应中未完成时省略"
+          }
+        },
+        "additionalProperties": true,
+        "examples": [
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "gxc-doubao-seedance-2-5-260628",
+            "status": "queued",
+            "progress": 0,
+            "created_at": 1793851200
+          },
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "gxc-doubao-seedance-2-5-260628",
+            "status": "completed",
+            "progress": 100,
+            "created_at": 1793851200,
+            "completed_at": 1793851260
+          }
+        ]
+      },
+      "Seedance25Request": {
+        "title": "Seedance 2.5",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型调用名",
+            "minLength": 1,
+            "pattern": "\\S",
+            "const": "gxc-doubao-seedance-2-5-260628"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "非空且不能仅包含空白字符的视频描述"
+          },
+          "seconds": {
+            "type": "integer",
+            "minimum": 4,
+            "description": "输出视频时长，单位为秒",
+            "maximum": 30
+          },
+          "resolution": {
+            "type": "string",
+            "description": "输出视频分辨率",
+            "enum": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "21:9",
+              "4:3",
+              "3:4"
+            ],
+            "description": "画面比例"
+          },
+          "image_references": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https?://",
+              "description": "生成期间持续可访问的 HTTP(S) URL"
+            },
+            "description": "参考图片 URL",
+            "maxItems": 30
+          },
+          "video_references": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https?://",
+              "description": "生成期间持续可访问的 HTTP(S) URL"
+            },
+            "description": "参考视频 URL",
+            "maxItems": 10
+          },
+          "audio_references": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https?://",
+              "description": "生成期间持续可访问的 HTTP(S) URL"
+            },
+            "description": "参考音频 URL",
+            "maxItems": 10
+          },
+          "matadata": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "视频生成选项",
+            "properties": {
+              "return_last_frame": {
+                "type": "boolean",
+                "description": "是否返回最后一帧"
+              },
+              "watermark": {
+                "type": "boolean",
+                "description": "是否添加水印"
+              },
+              "generate_audio": {
+                "type": "boolean",
+                "description": "是否生成音频"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/videos": {
+      "post": {
+        "tags": [
+          "GXC 视频"
+        ],
+        "operationId": "createGxcSeedance25",
+        "summary": "Seedance 2.5 视频生成",
+        "description": "使用 JSON 提交异步视频任务。视频选项字段名为 matadata；resolution 缺省为 720p。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Seedance25Request"
+              },
+              "examples": {
+                "Seedance25Request": {
+                  "summary": "gxc-doubao-seedance-2-5-260628",
+                  "value": {
+                    "model": "gxc-doubao-seedance-2-5-260628",
+                    "prompt": "清晨湖面，一只纸船缓缓漂行",
+                    "seconds": 4,
+                    "resolution": "720p",
+                    "aspect_ratio": "16:9"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "视频任务对象",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoTask"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

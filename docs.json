@@ -32,11 +32,24 @@
         "pages": [
           {
             "group": "通用接口",
-            "pages": ["api-reference/generation"]
+            "pages": [
+              "api-reference/generation",
+              "api-reference/videos/retrieve",
+              "api-reference/videos/content"
+            ]
           },
           {
             "group": "通义万相",
             "pages": ["model-reference/mu-wan3"]
+          },
+          {
+            "group": "GXC",
+            "pages": [
+              "api-reference/gxc/index",
+              "api-reference/gxc/seedance25",
+              "api-reference/gxc/seedance20",
+              "api-reference/gxc/seedance20-fast"
+            ]
           }
         ]
       }
