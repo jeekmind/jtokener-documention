@@ -12,52 +12,52 @@
     "languages": [
       {
         "language": "zh",
-    "dropdowns": [
-      {
-        "dropdown": "使用文档",
-        "icon": "book-open",
-        "directory": "card",
-        "pages": [
+        "dropdowns": [
           {
-            "group": "欢迎",
-            "pages": ["index"]
-          },
-          {
-            "group": "用户入门",
-            "pages": ["user-guide/start/quickstart"]
-          }
-        ]
-      },
-      {
-        "dropdown": "模型调用文档",
-        "icon": "book-open",
-        "directory": "card",
-        "pages": [
-          {
-            "group": "通用接口",
+            "dropdown": "使用文档",
+            "icon": "book-open",
+            "directory": "card",
             "pages": [
-              "api-reference/generation",
-              "api-reference/videos/retrieve",
-              "api-reference/videos/content"
+              {
+                "group": "欢迎",
+                "pages": ["index"]
+              },
+              {
+                "group": "用户入门",
+                "pages": ["user-guide/start/quickstart"]
+              }
             ]
           },
           {
-            "group": "通义万相",
-            "pages": ["model-reference/mu-wan3"]
-          },
-          {
-            "group": "GXC",
+            "dropdown": "模型调用文档",
+            "icon": "book-open",
+            "directory": "card",
             "pages": [
-              "api-reference/gxc/index",
-              "api-reference/gxc/seedance25",
-              "api-reference/gxc/seedance20",
-              "api-reference/gxc/seedance20-fast"
+              {
+                "group": "通用接口",
+                "pages": [
+                  "api-reference/generation",
+                  "api-reference/videos/retrieve",
+                  "api-reference/videos/content"
+                ]
+              },
+              {
+                "group": "通义万相",
+                "pages": ["model-reference/mu-wan3"]
+              },
+              {
+                "group": "GXC",
+                "pages": [
+                  "api-reference/gxc/index",
+                  "api-reference/gxc/seedance25",
+                  "api-reference/gxc/seedance20",
+                  "api-reference/gxc/seedance20-fast"
+                ]
+              }
             ]
           }
         ]
       }
-    ]
-    }
     ],
     "global": {
       "anchors": [
