@@ -9,6 +9,9 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
+    "languages": [
+      {
+        "language": "zh",
     "dropdowns": [
       {
         "dropdown": "使用文档",
@@ -53,6 +56,8 @@
           }
         ]
       }
+    ]
+    }
     ],
     "global": {
       "anchors": [
