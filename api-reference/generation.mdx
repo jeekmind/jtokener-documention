@@ -97,7 +97,7 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
     "model": "gxc-doubao-seedance-2-5-260628",
     "prompt": "飞机在云层中穿行",
     "seconds": 4,
-    "resolution": "480p"
+    "resolution": "720P"
   }'
 ```
 
@@ -105,12 +105,12 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
 
 | 参数 | 示例类型 | 示例值 | 说明 |
 | --- | --- | --- | --- |
-| `model` | string | `gxc-doubao-seedance-2-5-260628` | 模型标识 |
-| `prompt` | string | `飞机在云层中穿行` | 描述你希望生成的内容 |
-| `seconds` | number | `4` | 视频时长，单位为秒 |
-| `resolution` | string | `480p` | 视频分辨率，按示例保留大小写 |
+| `model` | string | `gxc-doubao-seedance-2-5-260628` | 必填，模型标识 |
+| `prompt` | string | `飞机在云层中穿行` | 必填，描述你希望生成的内容，不能仅包含空白字符 |
+| `seconds` | integer | `4` | 可选，视频时长，单位为秒；Seedance 2.5 支持 4–30 秒 |
+| `resolution` | string | `720P` | 可选，Seedance 2.5 支持 `720P`、`1080P`，默认 `720P`，区分大小写 |
 
-参数是否必填、默认值和可选范围待确认。
+你可以使用 `input_references` 传入参考素材，通过 `options` 设置音频、水印和尾帧选项。完整参数和模型差异见 [GXC 概览](/api-reference/gxc/index)及 [Seedance 2.5](/api-reference/gxc/seedance25)。
 
 ## 3. 查询视频任务
 
@@ -176,7 +176,7 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/video/generations
 
 ### 返回示例
 
-以下为成功任务的脱敏示例。用户、记录、渠道、分组、任务标识和时间已替换，消费与用量已改为演示值，上游资源地址使用 `example.com`。示例保留原始字段结构和类型，演示链接不可用于下载。此响应独立于上方请求示例，不表示请求 `480p` 会返回 `720p`。
+以下为成功任务的脱敏示例。用户、记录、渠道、分组、任务标识和时间已替换，消费与用量已改为演示值。示例保留原始字段结构和类型，演示链接不可用于下载。此响应独立于上方请求示例。
 
 ```json
 {

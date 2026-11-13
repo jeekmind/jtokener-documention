@@ -97,10 +97,6 @@
         "title": "Seedance 2.5",
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "model",
-          "prompt"
-        ],
         "properties": {
           "model": {
             "type": "string",
@@ -124,11 +120,11 @@
           "resolution": {
             "type": "string",
             "description": "输出视频分辨率",
+            "default": "720P",
             "enum": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
+              "720P",
+              "1080P"
+            ]
           },
           "aspect_ratio": {
             "type": "string",
@@ -142,59 +138,118 @@
             ],
             "description": "画面比例"
           },
-          "image_references": {
+          "input_references": {
             "type": "array",
             "items": {
-              "type": "string",
-              "format": "uri",
-              "pattern": "^https?://",
-              "description": "生成期间持续可访问的 HTTP(S) URL"
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "image",
+                    "video",
+                    "audio"
+                  ],
+                  "description": "媒体类型"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https?://",
+                  "description": "生成期间持续可访问的 HTTP(S) URL"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "reference"
+                  ],
+                  "default": "reference",
+                  "description": "素材用途，仅支持普通参考"
+                }
+              }
             },
-            "description": "参考图片 URL",
-            "maxItems": 30
+            "description": "普通参考素材，图片最多 30 张、视频最多 10 个、音频最多 10 个",
+            "allOf": [
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "image"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 30
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "video"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 10
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "audio"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 10
+              }
+            ]
           },
-          "video_references": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri",
-              "pattern": "^https?://",
-              "description": "生成期间持续可访问的 HTTP(S) URL"
-            },
-            "description": "参考视频 URL",
-            "maxItems": 10
-          },
-          "audio_references": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri",
-              "pattern": "^https?://",
-              "description": "生成期间持续可访问的 HTTP(S) URL"
-            },
-            "description": "参考音频 URL",
-            "maxItems": 10
-          },
-          "matadata": {
+          "options": {
             "type": "object",
             "additionalProperties": false,
             "description": "视频生成选项",
+            "default": {},
             "properties": {
               "return_last_frame": {
                 "type": "boolean",
-                "description": "是否返回最后一帧"
+                "description": "是否返回最后一帧",
+                "default": false
               },
               "watermark": {
                 "type": "boolean",
-                "description": "是否添加水印"
+                "description": "是否添加水印",
+                "default": false
               },
               "generate_audio": {
                 "type": "boolean",
-                "description": "是否生成音频"
+                "description": "是否生成音频",
+                "default": true
               }
             }
           }
-        }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
       }
     }
   },
@@ -206,7 +261,7 @@
         ],
         "operationId": "createGxcSeedance25",
         "summary": "Seedance 2.5 视频生成",
-        "description": "使用 JSON 提交异步视频任务。视频选项字段名为 matadata；resolution 缺省为 720p。",
+        "description": "使用 JSON 提交异步视频任务。参考素材使用 input_references，视频生成选项使用 options；resolution 缺省为 720P，取值区分大小写。",
         "requestBody": {
           "required": true,
           "content": {
@@ -221,8 +276,38 @@
                     "model": "gxc-doubao-seedance-2-5-260628",
                     "prompt": "清晨湖面，一只纸船缓缓漂行",
                     "seconds": 4,
-                    "resolution": "720p",
+                    "resolution": "720P",
                     "aspect_ratio": "16:9"
+                  }
+                },
+                "ReferenceRequest": {
+                  "summary": "使用参考素材和生成选项",
+                  "value": {
+                    "model": "gxc-doubao-seedance-2-5-260628",
+                    "prompt": "清晨湖面，一只纸船缓缓漂行",
+                    "seconds": 4,
+                    "resolution": "720P",
+                    "aspect_ratio": "16:9",
+                    "input_references": [
+                      {
+                        "type": "image",
+                        "url": "https://example.com/reference.jpg",
+                        "role": "reference"
+                      },
+                      {
+                        "type": "video",
+                        "url": "https://example.com/reference.mp4"
+                      },
+                      {
+                        "type": "audio",
+                        "url": "https://example.com/reference.mp3"
+                      }
+                    ],
+                    "options": {
+                      "return_last_frame": false,
+                      "watermark": false,
+                      "generate_audio": true
+                    }
                   }
                 }
               }

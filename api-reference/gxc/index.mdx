@@ -1,6 +1,73 @@
 ---
 title: "GXC 概览"
-description: ""
+description: "了解 GXC 视频模型的参数范围、参考素材结构和生成选项。"
 ---
 
-{/* 在此补充 GXC 的其他信息。 */}
+使用 `POST /v1/videos` 提交 JSON 视频生成任务。`model` 和 `prompt` 为必填项，`prompt` 不能仅包含空白字符。
+
+## 模型参数
+
+| 模型 | 调用名 | 时长（整数秒） | 分辨率 | 图片 / 视频 / 音频数量上限 |
+| --- | --- | --- | --- | --- |
+| [Seedance 2.5](/api-reference/gxc/seedance25) | `gxc-doubao-seedance-2-5-260628` | 4–30 | `720P`、`1080P` | 30 / 10 / 10 |
+| [Seedance 2.0](/api-reference/gxc/seedance20) | `gxc-doubao-seedance-2-0-260128` | 4–15 | `480P`、`720P`、`1080P`、`4K` | 9 / 3 / 3 |
+| [Seedance 2.0 Fast](/api-reference/gxc/seedance20-fast) | `gxc-doubao-seedance-2-0-fast-260128` | 4–15 | `480P`、`720P` | 9 / 3 / 3 |
+
+`seconds` 可省略。`resolution` 默认 `720P`，取值区分大小写。通过 `aspect_ratio` 指定画面比例，支持 `16:9`、`9:16`、`1:1`、`21:9`、`4:3` 和 `3:4`。
+
+## 参考素材
+
+使用 `input_references` 数组传入参考素材。每项必须包含 `type` 和 `url`：
+
+| 字段 | 说明 |
+| --- | --- |
+| `type` | 媒体类型：`image`、`video` 或 `audio` |
+| `url` | HTTP(S) URL，请确保在生成期间持续可访问 |
+| `role` | 可选，默认 `reference`，当前仅支持此用途 |
+
+素材数量按 `type` 分别统计，限制见上表。当前不支持首尾帧输入或 `aspect_ratio: "media_adaptive"`。
+
+## 生成选项
+
+在可选的 `options` 对象中设置以下布尔值：
+
+| 字段 | 默认值 | 说明 |
+| --- | --- | --- |
+| `return_last_frame` | `false` | 是否返回最后一帧 |
+| `watermark` | `false` | 是否添加水印 |
+| `generate_audio` | `true` | 是否生成音频 |
+
+```json
+{
+  "model": "gxc-doubao-seedance-2-5-260628",
+  "prompt": "参考图片中的纸船在清晨湖面上缓缓漂行",
+  "seconds": 4,
+  "resolution": "720P",
+  "aspect_ratio": "16:9",
+  "input_references": [
+    {
+      "type": "image",
+      "url": "https://example.com/reference.jpg",
+      "role": "reference"
+    }
+  ],
+  "options": {
+    "return_last_frame": false,
+    "watermark": false,
+    "generate_audio": true
+  }
+}
+```
+
+示例素材地址为占位符，调用前请替换为你的素材 URL。
+
+## 从旧版参数迁移
+
+- 将 `image_references`、`video_references`、`audio_references` 合并为 `input_references`，为每个 URL 添加对应的 `type`。
+- 将 `matadata` 或顶层的生成选项移入 `options`。
+- 将分辨率改为大写，例如 `720p` 改为 `720P`。
+- 使用 `aspect_ratio` 指定比例，不再使用 `ratio`。
+
+接口会拒绝未声明的字段，包括旧版素材字段、`image_urls`、`video_urls`、`audio_urls`、`duration`、`tools` 和 `options.optimize_prompt`。
+
+提交后，保存返回的 `id`，用于[查询视频任务](/api-reference/videos/retrieve)。任务完成后，你可以[下载视频](/api-reference/videos/content)。
