@@ -1,9 +1,9 @@
 ---
 title: "模型与生成任务"
-description: "获取模型列表、提交生成任务、查询任务状态，以及查询用量和本次消费。"
+description: "获取模型列表、提交生成任务、查询任务结果和本次费用，以及下载视频。"
 ---
 
-你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，使用任务 ID 查询状态并下载视频，再查询用量和本次消费。
+你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，使用任务 ID 查询结果和本次费用，并在任务完成后下载视频。
 
 <Note>
   本页为接口文档草稿。模型列表和视频查询的返回示例已补充并脱敏。
@@ -116,7 +116,7 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
 
 `GET /v1/videos/{id}`
 
-将 `YOUR_TASK_ID` 替换为提交视频任务返回的 `id`，使用同一 API 密钥查询任务状态和进度。完整参数说明见[查询视频任务](/api-reference/videos/retrieve)。
+将 `YOUR_TASK_ID` 替换为提交视频任务返回的 `id`，使用同一 API 密钥查询任务状态和进度，并在任务完成后从响应的 `final_cost` 字段读取本次费用。完整参数说明见[查询视频任务](/api-reference/videos/retrieve)。
 
 ### 请求示例
 
@@ -137,7 +137,8 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_
   "status": "completed",
   "progress": 100,
   "created_at": 1700000000,
-  "completed_at": 1700000300
+  "completed_at": 1700000300,
+  "final_cost": 1.4
 }
 ```
 
@@ -152,119 +153,6 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_
 | `progress` | 任务进度，整数类型 |
 | `created_at` | 创建时间，Unix 秒级时间戳 |
 | `completed_at` | 完成时间，Unix 秒级时间戳；任务未完成时可能省略 |
+| `final_cost` | 本次任务的最终费用，单位为人民币元。示例中的 `1.4` 表示人民币 1.4 元 |
 
 任务未完成时，可继续使用同一 `id` 查询。`status` 为 `completed` 后，通过 `GET /v1/videos/{id}/content` [下载视频](/api-reference/videos/content)。
-
-## 4. 查询用量与本次消费
-
-`GET /v1/video/generations/{task_id}`
-
-此接口用于查询任务用量和本次消费，返回的 `data.quota` 为消费额度。任务状态和视频下载请参考上一步的通用接口。
-
-将 `YOUR_TASK_ID` 替换为提交任务后获得的任务 ID。
-
-```bash
-curl --location --request GET 'https://tokener.jeekmind.com/v1/video/generations/YOUR_TASK_ID' \
-  --header 'Authorization: Bearer YOUR_API_KEY'
-```
-
-### 路径参数
-
-| 参数 | 说明 |
-| --- | --- |
-| `task_id` | 你需要查询的任务 ID |
-
-### 返回示例
-
-以下为成功任务的脱敏示例。用户、记录、渠道、分组、任务标识和时间已替换，消费与用量已改为演示值。示例保留原始字段结构和类型，演示链接不可用于下载。此响应独立于上方请求示例。
-
-```json
-{
-  "code": "success",
-  "message": "",
-  "data": {
-    "id": 10001,
-    "created_at": 1700000000,
-    "updated_at": 1700000300,
-    "task_id": "task_example",
-    "platform": "gxc",
-    "user_id": 10002,
-    "group": "example_group",
-    "channel_id": 10003,
-    "quota": 100000,
-    "action": "",
-    "status": "SUCCESS",
-    "fail_reason": "",
-    "result_url": "https://tokener.jeekmind.com/v1/videos/task_example/content",
-    "submit_time": 1700000000,
-    "start_time": 1700000050,
-    "finish_time": 1700000300,
-    "progress": "100",
-    "properties": {
-      "input": "",
-      "upstream_model_name": "doubao-seedance-2-5-260628",
-      "origin_model_name": "gxc-doubao-seedance-2-5-260628"
-    }
-  }
-}
-```
-
-### 任务记录字段
-
-| 字段 | 说明 |
-| --- | --- |
-| `code` | 查询响应码，示例中为 `success`；任务状态请查看 `data.status` |
-| `data.task_id` | 平台任务 ID，用于查询；示例中为 `task_example` |
-| `data.status` | 平台任务状态，示例中 `SUCCESS` 表示生成成功 |
-| `data.progress` | 平台任务进度，示例为字符串 `"100"` |
-| `data.result_url` | 平台返回的结果地址 |
-| `data.fail_reason` | 失败原因，成功示例中为空字符串 |
-| `data.submit_time` / `data.start_time` / `data.finish_time` | 提交、开始和完成的时间戳 |
-
-### 本次消费
-
-| 字段 | 示例值（演示） | 说明 |
-| --- | --- | --- |
-| `data.quota` | `100000` | 本次消费的额度，按下方公式换算为显示币种的金额 |
-
-#### 获取换算配置
-
-请求 `GET /api/status`，读取 `quota_per_unit`、`quota_display_type` 和 `usd_exchange_rate`。
-
-```bash
-curl --location 'https://tokener.jeekmind.com/api/status' \
-  --header 'Authorization: Bearer YOUR_API_KEY'
-```
-
-以下仅摘录返回中与换算有关的字段，省略其他配置及外层结构：
-
-```json
-{
-  "quota_display_type": "CNY",
-  "quota_per_unit": 500000,
-  "usd_exchange_rate": 7
-}
-```
-
-| 字段 | 示例值 | 说明 |
-| --- | --- | --- |
-| `quota_per_unit` | `500000` | 每单位基础金额对应的额度，作为换算除数 |
-| `quota_display_type` | `CNY` | 换算后的显示币种，示例为人民币 |
-| `usd_exchange_rate` | `7` | 从基础金额换算为显示币种金额的汇率，作为换算乘数 |
-
-#### 计算本次消费
-
-将用量查询返回的 `data.quota` 除以 `quota_per_unit`，再乘以 `usd_exchange_rate`：
-
-```text
-本次消费金额 = data.quota / quota_per_unit × usd_exchange_rate
-金额币种 = quota_display_type
-```
-
-以上方用量查询中的演示额度 `100000` 为例，使用示例配置计算：
-
-```text
-100000 / 500000 × 7 = 1.4 CNY
-```
-
-即本次消费为人民币 `1.4` 元。请使用 `/api/status` 返回的实际配置计算，示例中的额度、换算比例和汇率仅用于演示。
