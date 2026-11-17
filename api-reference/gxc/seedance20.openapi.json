@@ -26,7 +26,7 @@
     "schemas": {
       "VideoTask": {
         "title": "OpenAIVideoResponse",
-        "description": "标准视频任务对象。保存 id，用于查询任务和下载视频。",
+        "description": "视频任务对象。error 始终返回；成功时返回视频下载路径，有尾帧时额外返回尾帧下载路径。下载需使用同一 API 密钥。",
         "type": "object",
         "required": [
           "id",
@@ -34,7 +34,8 @@
           "model",
           "status",
           "progress",
-          "created_at"
+          "created_at",
+          "error"
         ],
         "properties": {
           "id": {
@@ -47,7 +48,7 @@
           },
           "model": {
             "type": "string",
-            "description": "客户端请求的模型名称"
+            "description": "客户端请求的模型名称，包含渠道映射前的别名"
           },
           "status": {
             "type": "string",
@@ -70,6 +71,34 @@
           "completed_at": {
             "type": "integer",
             "description": "完成时间，Unix 秒级时间戳；创建响应中未完成时省略"
+          },
+          "error": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "任务失败原因"
+              }
+            }
+          },
+          "url": {
+            "type": "string",
+            "format": "uri-reference",
+            "pattern": "^/v1/videos/[^/]+/content$",
+            "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+          },
+          "url_last_frame": {
+            "type": "string",
+            "format": "uri-reference",
+            "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
+            "description": "成功且有尾帧时返回的下载路径，不含 BaseURL，格式为 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 New API Key 认证"
           }
         },
         "additionalProperties": true,
@@ -80,7 +109,8 @@
             "model": "gxc-doubao-seedance-2-0-260128",
             "status": "queued",
             "progress": 0,
-            "created_at": 1793851200
+            "created_at": 1793851200,
+            "error": null
           },
           {
             "id": "video_example",
@@ -89,7 +119,10 @@
             "status": "completed",
             "progress": 100,
             "created_at": 1793851200,
-            "completed_at": 1793851260
+            "completed_at": 1793851260,
+            "error": null,
+            "url": "/v1/videos/video_example/content",
+            "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
           }
         ]
       },
@@ -114,17 +147,18 @@
           "seconds": {
             "type": "integer",
             "minimum": 4,
+            "default": 5,
             "description": "输出视频时长，单位为秒",
             "maximum": 15
           },
           "resolution": {
             "type": "string",
             "description": "输出视频分辨率",
-            "default": "720P",
+            "default": "720p",
             "enum": [
-              "480P",
-              "720P",
-              "1080P",
+              "480p",
+              "720p",
+              "1080p",
               "4K"
             ]
           },
@@ -263,7 +297,7 @@
         ],
         "operationId": "createGxcSeedance20",
         "summary": "Seedance 2.0 视频生成",
-        "description": "使用 JSON 提交异步视频任务。参考素材使用 input_references，视频生成选项使用 options；resolution 缺省为 720P，取值区分大小写。",
+        "description": "使用 JSON 提交异步视频任务。参考素材使用 input_references，生成选项使用 options；seconds 默认 5 秒，resolution 默认 720p，取值区分大小写。",
         "requestBody": {
           "required": true,
           "content": {
@@ -278,7 +312,7 @@
                     "model": "gxc-doubao-seedance-2-0-260128",
                     "prompt": "清晨湖面，一只纸船缓缓漂行",
                     "seconds": 4,
-                    "resolution": "720P",
+                    "resolution": "720p",
                     "aspect_ratio": "16:9"
                   }
                 },
@@ -288,7 +322,7 @@
                     "model": "gxc-doubao-seedance-2-0-260128",
                     "prompt": "清晨湖面，一只纸船缓缓漂行",
                     "seconds": 4,
-                    "resolution": "720P",
+                    "resolution": "720p",
                     "aspect_ratio": "16:9",
                     "input_references": [
                       {

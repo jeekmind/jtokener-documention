@@ -97,7 +97,7 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
     "model": "gxc-doubao-seedance-2-5-260628",
     "prompt": "飞机在云层中穿行",
     "seconds": 4,
-    "resolution": "720P"
+    "resolution": "720p"
   }'
 ```
 
@@ -107,8 +107,8 @@ curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
 | --- | --- | --- | --- |
 | `model` | string | `gxc-doubao-seedance-2-5-260628` | 必填，模型标识 |
 | `prompt` | string | `飞机在云层中穿行` | 必填，描述你希望生成的内容，不能仅包含空白字符 |
-| `seconds` | integer | `4` | 可选，视频时长，单位为秒；Seedance 2.5 支持 4–30 秒 |
-| `resolution` | string | `720P` | 可选，Seedance 2.5 支持 `720P`、`1080P`，默认 `720P`，区分大小写 |
+| `seconds` | integer | `4` | 可选，视频时长，单位为秒，默认 5 秒；Seedance 2.5 支持 4–30 秒 |
+| `resolution` | string | `720p` | 可选，Seedance 2.5 支持 `720p`、`1080p`，默认 `720p`，区分大小写 |
 
 你可以使用 `input_references` 传入参考素材，通过 `options` 设置音频、水印和尾帧选项。完整参数和模型差异见 [GXC 概览](/api-reference/gxc/index)及 [Seedance 2.5](/api-reference/gxc/seedance25)。
 
@@ -138,7 +138,9 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_
   "progress": 100,
   "created_at": 1700000000,
   "completed_at": 1700000300,
-  "final_cost": 1.4
+  "final_cost": 1.4,
+  "error": null,
+  "url": "/v1/videos/task_example/content"
 }
 ```
 
@@ -153,6 +155,9 @@ curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_
 | `progress` | 任务进度，整数类型 |
 | `created_at` | 创建时间，Unix 秒级时间戳 |
 | `completed_at` | 完成时间，Unix 秒级时间戳；任务未完成时可能省略 |
+| `error` | GXC 始终返回；无错误或成功时为 `null`，有失败原因时为包含 `message` 的对象 |
+| `url` | GXC 成功时返回的视频下载相对路径，需拼接 API 服务地址并携带同一 API 密钥 |
+| `url_last_frame` | GXC 成功且有尾帧时返回的尾帧下载相对路径，认证方式同视频下载 |
 | `final_cost` | 本次任务的最终费用，单位为人民币元。示例中的 `1.4` 表示人民币 1.4 元 |
 
 任务未完成时，可继续使用同一 `id` 查询。`status` 为 `completed` 后，通过 `GET /v1/videos/{id}/content` [下载视频](/api-reference/videos/content)。

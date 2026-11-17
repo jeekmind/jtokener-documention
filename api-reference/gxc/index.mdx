@@ -9,11 +9,11 @@ description: "了解 GXC 视频模型的参数范围、参考素材结构和生�
 
 | 模型 | 调用名 | 时长（整数秒） | 分辨率 | 图片 / 视频 / 音频数量上限 |
 | --- | --- | --- | --- | --- |
-| [Seedance 2.5](/api-reference/gxc/seedance25) | `gxc-doubao-seedance-2-5-260628` | 4–30 | `720P`、`1080P` | 30 / 10 / 10 |
-| [Seedance 2.0](/api-reference/gxc/seedance20) | `gxc-doubao-seedance-2-0-260128` | 4–15 | `480P`、`720P`、`1080P`、`4K` | 9 / 3 / 3 |
-| [Seedance 2.0 Fast](/api-reference/gxc/seedance20-fast) | `gxc-doubao-seedance-2-0-fast-260128` | 4–15 | `480P`、`720P` | 9 / 3 / 3 |
+| [Seedance 2.5](/api-reference/gxc/seedance25) | `gxc-doubao-seedance-2-5-260628` | 4–30 | `720p`、`1080p` | 30 / 10 / 10 |
+| [Seedance 2.0](/api-reference/gxc/seedance20) | `gxc-doubao-seedance-2-0-260128` | 4–15 | `480p`、`720p`、`1080p`、`4K` | 9 / 3 / 3 |
+| [Seedance 2.0 Fast](/api-reference/gxc/seedance20-fast) | `gxc-doubao-seedance-2-0-fast-260128` | 4–15 | `480p`、`720p` | 9 / 3 / 3 |
 
-`seconds` 可省略。`resolution` 默认 `720P`，取值区分大小写。通过 `aspect_ratio` 指定画面比例，支持 `16:9`、`9:16`、`1:1`、`21:9`、`4:3` 和 `3:4`。
+`seconds` 默认 5 秒，必须为整数。`resolution` 默认 `720p`，取值区分大小写。通过 `aspect_ratio` 指定画面比例，支持 `16:9`、`9:16`、`1:1`、`21:9`、`4:3` 和 `3:4`。
 
 ## 参考素材
 
@@ -42,7 +42,7 @@ description: "了解 GXC 视频模型的参数范围、参考素材结构和生�
   "model": "gxc-doubao-seedance-2-5-260628",
   "prompt": "参考图片中的纸船在清晨湖面上缓缓漂行",
   "seconds": 4,
-  "resolution": "720P",
+  "resolution": "720p",
   "aspect_ratio": "16:9",
   "input_references": [
     {
@@ -61,13 +61,38 @@ description: "了解 GXC 视频模型的参数范围、参考素材结构和生�
 
 示例素材地址为占位符，调用前请替换为你的素材 URL。
 
-## 从旧版参数迁移
 
-- 将 `image_references`、`video_references`、`audio_references` 合并为 `input_references`，为每个 URL 添加对应的 `type`。
-- 将 `matadata` 或顶层的生成选项移入 `options`。
-- 将分辨率改为大写，例如 `720p` 改为 `720P`。
-- 使用 `aspect_ratio` 指定比例，不再使用 `ratio`。
+## 查询结果与下载
 
-接口会拒绝未声明的字段，包括旧版素材字段、`image_urls`、`video_urls`、`audio_urls`、`duration`、`tools` 和 `options.optimize_prompt`。
+使用提交时的同一 API 密钥查询和下载。查询响应始终包含 `error`，没有错误或任务成功时为 `null`；有失败原因时为 `{ "message": "失败原因" }`。
 
-提交后，保存返回的 `id`，用于[查询视频任务](/api-reference/videos/retrieve)。任务完成后，你可以[下载视频](/api-reference/videos/content)。
+当 `status` 为 `completed` 时，响应包含 `url`。如果你设置 `options.return_last_frame: true` 且模型返回尾帧，响应还包含 `url_last_frame`。任务未成功或没有尾帧时，不返回对应下载路径。
+
+这两个字段均为相对路径。将路径拼接到你的 API 服务地址后，携带 `Authorization: Bearer YOUR_API_KEY` 下载。
+
+```json
+{
+  "id": "video_example",
+  "object": "video",
+  "model": "gxc-doubao-seedance-2-5-260628",
+  "status": "completed",
+  "progress": 100,
+  "created_at": 1793851200,
+  "completed_at": 1793851260,
+  "error": null,
+  "url": "/v1/videos/video_example/content",
+  "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
+}
+```
+
+```bash
+# 下载视频
+curl 'https://tokener.jeekmind.com/v1/videos/video_example/content' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -o video.mp4
+
+# 下载尾帧（仅在返回 url_last_frame 时可用）
+curl 'https://tokener.jeekmind.com/v1/tasks/video_example/artifacts/last_frame/content' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -o last-frame.jpg
+```
