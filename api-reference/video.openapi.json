@@ -477,6 +477,29 @@
           }
         },
         "description": "所有当前渠道共用的请求字段集合。字段是否支持、必填条件、枚举、范围及默认值由具体模型限定；此集合不表示任意字段组合均可提交。"
+      },
+      "VideoRequestError": {
+        "title": "输入错误",
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "错误标识，例如 plugin_request_invalid"
+          },
+          "message": {
+            "type": "string",
+            "description": "具体输入校验错误，可能包含插件版本与参数路径"
+          },
+          "data": {
+            "type": "null",
+            "description": "无任务数据"
+          }
+        }
       }
     }
   },
@@ -581,6 +604,26 @@
                       "error": {
                         "message": "视频生成失败，请检查输入素材后重试"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "输入错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoRequestError"
+                },
+                "examples": {
+                  "invalid_input": {
+                    "summary": "输入错误",
+                    "value": {
+                      "code": "plugin_request_invalid",
+                      "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
+                      "data": null
                     }
                   }
                 }

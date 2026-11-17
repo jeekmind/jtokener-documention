@@ -7,30 +7,29 @@ description: "通过 HTTP 状态码识别请求错误，读取错误原因，并
 
 先检查响应的 HTTP 状态码。所有非 `2xx` 状态码均表示请求错误；`2xx` 指 `200`–`299`。
 
-收到非 `2xx` 响应时，按错误响应处理，不要将响应体作为正常的任务对象或视频文件解析。读取 `error` 中的错误原因，再决定如何处理请求。
+收到非 `2xx` 响应时，按错误响应处理，不要将响应体作为正常的任务对象或视频文件解析。读取响应体中的错误原因，再决定如何处理请求。
 
 ## 错误响应示例
 
+以下为视频生成提交接口返回 HTTP `400` 时的“输入错误”示例。
+
 ```json
 {
-  "error": {
-    "code": "model_not_found",
-    "message": "No available channel for model gxc-doubao-seedance-2-0-260128 under group default (distributor) (request id: 1234)",
-    "type": "new_api_error"
-  }
+  "code": "plugin_request_invalid",
+  "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
+  "data": null
 }
 ```
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `error` | object | 错误详情 |
-| `error.code` | string | 错误标识，示例为 `model_not_found` |
-| `error.message` | string | 具体错误原因，可能包含请求 ID |
-| `error.type` | string | 错误类型，示例为 `new_api_error` |
+| `code` | string | 错误标识，示例为 `plugin_request_invalid` |
+| `message` | string | 具体错误原因，可能包含插件版本、参数路径和校验信息 |
+| `data` | null | 示例中为 `null`，不包含任务数据 |
 
-该示例表示请求所用分组 `default` 下，模型 `gxc-doubao-seedance-2-0-260128` 没有可用渠道。请检查模型调用名、API 密钥所属分组及可用渠道配置。排查问题时，保留 HTTP 状态码、错误信息和消息中的请求 ID。
+该示例表示提交参数未通过模型校验：`seconds` 超过 30 秒，且 `resolution` 不在允许值中。请根据对应模型文档修正参数后重新提交。消息中的插件版本、文件名和行号可能随版本变化，请勿依赖完整消息文本判断错误类型。
 
-不同错误的字段值和消息会变化。若响应体无法解析为上述 JSON 结构，仍以非 `2xx` 状态码判定请求错误，并保留原始响应供排查。
+不同错误的响应结构和消息可能变化，包括使用嵌套的 `error` 对象。若响应体无法解析为上述 JSON 结构，仍以非 `2xx` 状态码判定请求错误，并保留 HTTP 状态码和原始响应供排查。
 
 ## 区分请求错误与任务失败
 

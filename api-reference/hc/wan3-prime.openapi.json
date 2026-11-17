@@ -644,6 +644,29 @@
             }
           }
         ]
+      },
+      "VideoRequestError": {
+        "title": "输入错误",
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "错误标识，例如 plugin_request_invalid"
+          },
+          "message": {
+            "type": "string",
+            "description": "具体输入校验错误，可能包含插件版本与参数路径"
+          },
+          "data": {
+            "type": "null",
+            "description": "无任务数据"
+          }
+        }
       }
     }
   },
@@ -765,6 +788,27 @@
                         "message": "视频生成失败，请检查输入素材后重试"
                       }
                     }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "输入错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoRequestError"
+                },
+                "examples": {
+                  "invalid_input": {
+                    "summary": "输入错误",
+                    "value": {
+                      "code": "plugin_request_invalid",
+                      "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
+                      "data": null
+                    },
+                    "description": "GXC 渠道的输入校验错误示例。实际插件名、版本、参数路径及校验消息以当前模型返回为准。"
                   }
                 }
               }
