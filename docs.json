@@ -20,11 +20,15 @@
             "pages": [
               {
                 "group": "欢迎",
-                "pages": ["index"]
+                "pages": [
+                  "index"
+                ]
               },
               {
                 "group": "用户入门",
-                "pages": ["user-guide/start/quickstart"]
+                "pages": [
+                  "user-guide/start/quickstart"
+                ]
               }
             ]
           },
@@ -34,7 +38,7 @@
             "directory": "card",
             "pages": [
               {
-                "group": "通用接口",
+                "group": "通用接口与教程",
                 "pages": [
                   "api-reference/generation",
                   "api-reference/videos/retrieve",
@@ -42,16 +46,24 @@
                 ]
               },
               {
-                "group": "通义万相",
-                "pages": ["model-reference/mu-wan3"]
-              },
-              {
-                "group": "GXC",
+                "group": "渠道介绍",
                 "pages": [
                   "api-reference/gxc/index",
+                  "channels/mu"
+                ]
+              },
+              {
+                "group": "Seedance 系列",
+                "pages": [
                   "api-reference/gxc/seedance25",
                   "api-reference/gxc/seedance20",
                   "api-reference/gxc/seedance20-fast"
+                ]
+              },
+              {
+                "group": "通义万相系列",
+                "pages": [
+                  "model-reference/mu-wan3"
                 ]
               }
             ]
@@ -87,7 +99,12 @@
     }
   },
   "contextual": {
-    "options": ["copy", "view", "mcp", "vscode"]
+    "options": [
+      "copy",
+      "view",
+      "mcp",
+      "vscode"
+    ]
   },
   "footer": {}
 }

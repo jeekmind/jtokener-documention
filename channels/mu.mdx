@@ -1,0 +1,19 @@
+---
+title: "MU 渠道"
+description: "了解 MU 渠道的通义万相模型与调用入口。"
+---
+
+MU 渠道提供通义万相 3.0 视频生成接口。你可以选择标准版 `wan3.0-video` 或高速版 `wan3.0-video-prime`。
+
+## 模型调用
+
+在[MU 通义万相 3.0](/model-reference/mu-wan3)中查看模型参数、素材要求和完整调用示例。
+
+| 操作 | 接口 |
+| --- | --- |
+| 提交视频任务 | `POST /v1/video/generations` |
+| 查询视频任务 | `GET /v1/video/generations/{task_id}` |
+
+接口基础地址为 `https://tokener.jeekmind.com`。使用你的技元 API 密钥认证；获取密钥的步骤见[快速入门](/user-guide/start/quickstart)。
+
+该渠道支持文生视频、首帧或首尾帧生视频、参考素材生视频，以及公开文件或网页生视频。不同素材的参数与互斥规则见模型调用文档。
