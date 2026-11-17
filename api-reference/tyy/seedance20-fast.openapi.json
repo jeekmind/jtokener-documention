@@ -693,7 +693,7 @@
         ],
         "operationId": "createTyySeedance20Fast",
         "summary": "TYY Seedance 2.0 Fast 视频生成",
-        "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。",
+        "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
         "requestBody": {
           "required": true,
           "content": {

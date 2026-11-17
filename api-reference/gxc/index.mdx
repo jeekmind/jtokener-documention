@@ -92,7 +92,7 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
   </Tab>
   <Tab title="成功">
 
-`status` 为 `completed` 时，你可以下载视频。以下示例包含尾帧；没有尾帧时省略 `url_last_frame`。
+`status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频。以下示例包含尾帧；没有尾帧时省略 `url_last_frame`。
 
 ```json
 {
@@ -186,13 +186,16 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
 ### 下载示例
 
 ```bash
-# 下载视频
-curl 'https://tokener.jeekmind.com/v1/videos/video_example/content' \
+# 将 VIDEO_URL 设置为查询结果中的 url，保留返回的完整路径
+API_BASE_URL='https://tokener.jeekmind.com'
+VIDEO_URL='/v1/videos/video_example/content'
+curl "${API_BASE_URL}${VIDEO_URL}" \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -o video.mp4
 
-# 下载尾帧（仅在返回 url_last_frame 时可用）
-curl 'https://tokener.jeekmind.com/v1/tasks/video_example/artifacts/last_frame/content' \
+# 将 LAST_FRAME_URL 设置为查询结果中的 url_last_frame（仅有尾帧时可用）
+LAST_FRAME_URL='/v1/tasks/video_example/artifacts/last_frame/content'
+curl "${API_BASE_URL}${LAST_FRAME_URL}" \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -o last-frame.jpg
 ```

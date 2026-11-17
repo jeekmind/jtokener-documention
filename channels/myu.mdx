@@ -14,7 +14,7 @@ description: "查看 MYU 渠道支持的模型和调用入口。"
 
 1. 使用 `POST /v1/videos` 提交 JSON 任务。
 2. 保存返回的 `id`，通过 `GET /v1/videos/{id}` 查询。
-3. 任务成功后，通过 `GET /v1/videos/{id}/content` 下载视频。
+3. 当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url` 下载视频；相对路径需先拼接 API 服务地址，并携带同一 API 密钥。
 
 接口基础地址为 `https://tokener.jeekmind.com`。查询和下载均使用提交时的同一 API 密钥。密钥获取方式见[快速入门](/user-guide/start/quickstart)。
 

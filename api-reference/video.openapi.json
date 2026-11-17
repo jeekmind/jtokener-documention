@@ -511,7 +511,7 @@
         ],
         "operationId": "createVideo",
         "summary": "提交视频生成任务",
-        "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。",
+        "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
         "requestBody": {
           "required": true,
           "content": {
@@ -640,7 +640,7 @@
         ],
         "operationId": "getVideo",
         "summary": "查询视频任务",
-        "description": "使用创建响应中的 id 查询。status 为 completed 后可下载视频。",
+        "description": "使用创建响应中的 id 查询。当 status 为 completed 时，推荐使用本次查询结果中的 url 下载视频；相对路径需先拼接 API 服务地址，下载需携带同一 API 密钥。",
         "parameters": [
           {
             "name": "id",
@@ -717,7 +717,7 @@
         ],
         "operationId": "downloadVideo",
         "summary": "下载视频",
-        "description": "任务完成后，使用同一 API 密钥读取视频内容。",
+        "description": "视频下载接口参考。实际调用流程推荐使用任务查询结果中的 url 获取视频；下载需使用提交时的同一 API 密钥。",
         "parameters": [
           {
             "name": "id",

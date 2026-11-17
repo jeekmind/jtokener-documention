@@ -39,7 +39,7 @@ description: "通过 HTTP 状态码识别请求错误，读取错误原因，并
 | --- | --- | --- |
 | 请求错误 | HTTP 状态码非 `2xx` | 读取错误原因，修正请求或处理服务异常 |
 | 任务生成中 | HTTP 状态码为 `2xx`，任务 `status` 为 `queued` 或 `in_progress` | 保存任务 `id`，继续查询 |
-| 任务成功 | HTTP 状态码为 `2xx`，任务 `status` 为 `completed` | 下载生成结果 |
+| 任务成功 | HTTP 状态码为 `2xx`，任务 `status` 为 `completed` | 使用查询结果中的 `url` 下载生成结果 |
 | 任务失败 | HTTP 状态码为 `2xx`，任务 `status` 为 `failed` | 读取任务响应的 `error.message`，没有原因时 `error` 可能为 `null` |
 | 任务状态未知 | HTTP 状态码为 `2xx`，任务 `status` 为 `unknown` | 使用同一任务 `id` 继续查询确认 |
 

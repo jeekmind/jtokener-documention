@@ -17,7 +17,7 @@ openapi: "api-reference/myu/wan3-prime.openapi.json POST /v1/videos"
 
 ## 查询与下载
 
-提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)，完成后[下载视频](/api-reference/videos/content)。
+提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)。当 `status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频；若为相对路径，先拼接 API 服务地址，并携带提交时的同一 API 密钥。
 
 成功时返回 `url`；路径相对于 API 服务地址，下载需携带提交时的同一 API 密钥。此渠道仅提供主视频，不返回 `url_last_frame`。
 

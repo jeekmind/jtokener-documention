@@ -505,7 +505,7 @@
         ],
         "operationId": "createGxcSeedance20",
         "summary": "Seedance 2.0 视频生成",
-        "description": "使用 JSON 提交异步视频任务。参考素材使用 input_references，生成选项使用 options；seconds 默认 5 秒，resolution 默认 720p，取值区分大小写。",
+        "description": "使用 JSON 提交异步视频任务。参考素材使用 input_references，生成选项使用 options；seconds 默认 5 秒，resolution 默认 720p，取值区分大小写。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
         "requestBody": {
           "required": true,
           "content": {
