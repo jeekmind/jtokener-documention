@@ -1,128 +1,83 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "技元",
-  "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "languages": [
-      {
-        "language": "zh",
-        "dropdowns": [
-          {
-            "dropdown": "使用文档",
-            "icon": "book-open",
-            "directory": "card",
-            "pages": [
-              {
-                "group": "欢迎",
-                "pages": [
-                  "index"
+    "$schema"   : "https://mintlify.com/docs.json",
+    "theme"     : "mint",
+    "name"      : "技元",
+    "colors"    : {"primary": "#16A34A", "light": "#07C983", "dark": "#15803D"},
+    "favicon"   : "/favicon.svg",
+    "navigation": {
+        "languages": [
+            {
+                "language" : "zh",
+                "dropdowns": [
+                    {
+                        "dropdown" : "使用文档",
+                        "icon"     : "book-open",
+                        "directory": "card",
+                        "pages"    : [
+                            { "group": "欢迎",     "pages": ["index"                      ] },
+                            { "group": "用户入门", "pages": ["user-guide/start/quickstart"] }
+                        ]
+                    },
+                    {
+                        "dropdown" : "模型调用文档",
+                        "icon"     : "book-open",
+                        "directory": "card",
+                        "pages"    : [
+                            {
+                                "group": "通用接口与教程",
+                                "pages": [
+                                    "api-reference/generation-guide",
+                                    "api-reference/videos/create",
+                                    "api-reference/videos/retrieve",
+                                    "api-reference/videos/content",
+                                    "api-reference/errors"
+                                ]
+                            },
+                            {
+                                "group": "渠道介绍",
+                                "pages": [
+                                    "api-reference/gxc/index", "channels/tyy",            "channels/hc",
+                                    "channels/myu",            "channels/me"
+                                ]
+                            },
+                            {
+                                "group": "Seedance 系列",
+                                "pages": [
+                                    "api-reference/gxc/seedance25",
+                                    "api-reference/gxc/seedance20",
+                                    "api-reference/gxc/seedance20-fast",
+                                    "api-reference/tyy/seedance25",
+                                    "api-reference/tyy/seedance20",
+                                    "api-reference/tyy/seedance20-fast",
+                                    "api-reference/tyy/seedance20-mini"
+                                ]
+                            },
+                            {
+                                "group": "通义万相系列",
+                                "pages": [
+                                    "api-reference/hc/wan3",
+                                    "api-reference/hc/wan3-prime",
+                                    "api-reference/myu/wan3",
+                                    "api-reference/myu/wan3-prime"
+                                ]
+                            },
+                            { "group": "MiniMax 系列", "pages": ["api-reference/me/minimax-h3"] }
+                        ]
+                    }
                 ]
-              },
-              {
-                "group": "用户入门",
-                "pages": [
-                  "user-guide/start/quickstart"
-                ]
-              }
+            }
+        ],
+        "global"   : {
+            "anchors": [
+                {"anchor": "模型广场", "href": "https://tokener.jeekmind.com/pricing", "icon": "book-open-cover"}
             ]
-          },
-          {
-            "dropdown": "模型调用文档",
-            "icon": "book-open",
-            "directory": "card",
-            "pages": [
-              {
-                "group": "通用接口与教程",
-                "pages": [
-                  "api-reference/generation-guide",
-                  "api-reference/videos/create",
-                  "api-reference/videos/retrieve",
-                  "api-reference/videos/content",
-                  "api-reference/errors"
-                ]
-              },
-              {
-                "group": "渠道介绍",
-                "pages": [
-                  "api-reference/gxc/index",
-                  "channels/tyy",
-                  "channels/hc",
-                  "channels/myu",
-                  "channels/me"
-                ]
-              },
-              {
-                "group": "Seedance 系列",
-                "pages": [
-                  "api-reference/gxc/seedance25",
-                  "api-reference/gxc/seedance20",
-                  "api-reference/gxc/seedance20-fast",
-                  "api-reference/tyy/seedance25",
-                  "api-reference/tyy/seedance20",
-                  "api-reference/tyy/seedance20-fast",
-                  "api-reference/tyy/seedance20-mini"
-                ]
-              },
-              {
-                "group": "通义万相系列",
-                "pages": [
-                  "api-reference/hc/wan3",
-                  "api-reference/hc/wan3-prime",
-                  "api-reference/myu/wan3",
-                  "api-reference/myu/wan3-prime"
-                ]
-              },
-              {
-                "group": "MiniMax 系列",
-                "pages": [
-                  "api-reference/me/minimax-h3"
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "模型广场",
-          "href": "https://tokener.jeekmind.com/pricing",
-          "icon": "book-open-cover"
         }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "技灵 AI 营销助手",
-        "href": "https://help.jeekmind.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "使用技元",
-      "href": "https://tokener.jeekmind.com"
-    }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "mcp",
-      "vscode"
-    ]
-  },
-  "footer": {}
+    },
+    "logo"      : {"light": "/logo/light.svg", "dark": "/logo/dark.svg"},
+    "navbar"    : {
+        "links"  : [ {"label": "技灵 AI 营销助手", "href": "https://help.jeekmind.com"} ],
+        "primary": {"type": "button", "label": "使用技元", "href": "https://tokener.jeekmind.com"}
+    },
+    "contextual": { "options": ["copy", "view", "mcp", "vscode"] },
+    "footer"    : {}
 }

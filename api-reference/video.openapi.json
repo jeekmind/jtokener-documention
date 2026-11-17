@@ -1,749 +1,492 @@
 {
-  "openapi": "3.1.0",
-  "servers": [
-    {
-      "url": "https://tokener.jeekmind.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "info": {
-    "title": "通用视频接口",
-    "version": "0.1.0",
-    "description": "通用视频任务查询与下载接口，响应字段按任务状态区分。"
-  },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "技元 API 密钥"
-      }
+    "openapi"   : "3.1.0",
+    "servers"   : [ {"url": "https://tokener.jeekmind.com"} ],
+    "security"  : [ {"bearerAuth": []} ],
+    "info"      : {
+        "title"      : "通用视频接口",
+        "version"    : "0.1.0",
+        "description": "通用视频任务查询与下载接口，响应字段按任务状态区分。"
     },
-    "schemas": {
-      "VideoTask": {
-        "title": "视频任务响应",
-        "description": "按 status 选择生成中、成功、错误或状态未知的字段结构。",
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/VideoTaskGenerating"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskCompleted"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskFailed"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskUnknown"
-          }
-        ]
-      },
-      "VideoTaskGenerating": {
-        "title": "生成中",
-        "description": "任务排队或生成中，不返回下载路径。",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "queued",
-              "in_progress"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": "null",
-            "description": "无错误时返回 null。"
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "gxc-doubao-seedance-2-5-260628",
-            "status": "in_progress",
-            "progress": 50,
-            "created_at": 1793851200,
-            "error": null
-          }
-        ]
-      },
-      "VideoTaskCompleted": {
-        "title": "成功",
-        "description": "任务成功，可下载视频；有尾帧时返回尾帧下载路径。",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at",
-          "completed_at"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "completed"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "completed_at": {
-            "type": "integer",
-            "description": "完成时间，Unix 秒级时间戳。"
-          },
-          "error": {
-            "type": "null",
-            "description": "无错误时返回 null。"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri-reference",
-            "pattern": "^/v1/videos/[^/]+/content$",
-            "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
-          },
-          "url_last_frame": {
-            "type": "string",
-            "format": "uri-reference",
-            "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
-            "description": "GXC、TYY 成功且有尾帧时返回的相对下载路径 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 API 密钥认证；HC、MYU、ME 不返回此字段。"
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "gxc-doubao-seedance-2-5-260628",
-            "status": "completed",
-            "progress": 100,
-            "created_at": 1793851200,
-            "error": null,
-            "completed_at": 1793851260,
-            "url": "/v1/videos/video_example/content",
-            "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
-          }
-        ]
-      },
-      "VideoTaskFailed": {
-        "title": "错误",
-        "description": "任务失败，有失败原因时返回 error.message，不返回下载路径。",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "failed"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "任务失败原因"
-              }
-            }
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "gxc-doubao-seedance-2-5-260628",
-            "status": "failed",
-            "progress": 0,
-            "created_at": 1793851200,
-            "error": {
-              "message": "视频生成失败，请检查输入素材后重试"
-            }
-          }
-        ]
-      },
-      "VideoTaskUnknown": {
-        "title": "状态未知",
-        "description": "暂时无法确定任务状态，可继续查询；不返回下载路径。",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "unknown"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "任务失败原因"
-              }
-            }
-          }
-        },
-        "additionalProperties": true
-      },
-      "VideoGenerationRequest": {
-        "title": "视频生成提交参数",
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "model"
-        ],
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "必填。模型完整调用名，包含渠道前缀，例如 gxc-doubao-seedance-2-5-260628；详见对应模型文档。",
-            "minLength": 1,
-            "pattern": "\\S"
-          },
-          "prompt": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "\\S",
-            "description": "视频描述，不得为空或仅包含空白字符。部分模型必填，其他模型允许提供参考素材后省略；长度限制见模型文档。"
-          },
-          "seconds": {
-            "type": "integer",
-            "description": "整数秒。当前模型支持的时长范围及默认值不同；部分模型支持 -1 智能时长。是否必填及素材、分辨率关联限制见模型文档。"
-          },
-          "resolution": {
-            "type": "string",
-            "description": "输出分辨率。当前取值集合为 480p、720p、768p、1080p、2K、4K，区分大小写；每个模型仅支持其中一部分，默认值见模型文档。"
-          },
-          "aspect_ratio": {
-            "type": "string",
-            "enum": [
-              "16:9",
-              "9:16",
-              "1:1",
-              "21:9",
-              "4:3",
-              "3:4",
-              "media_adaptive"
-            ],
-            "description": "画面比例；media_adaptive 表示根据素材自适应。支持范围、默认值和首尾帧或纯文本场景的限制见模型文档。"
-          },
-          "provider_tools": {
-            "type": "array",
-            "description": "可选的提供方工具配置，当前仅部分模型支持；工具类型为 web_search。不能使用旧字段 tools。",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "type"
-              ],
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "web_search"
-                  ],
-                  "description": "工具类型"
-                }
-              }
-            }
-          },
-          "callback_url": {
-            "type": "string",
-            "format": "uri",
-            "pattern": "^https?://[^\\s/?#]+(?:[/?#]\\S*)?$",
-            "description": "可选 HTTP(S) 回调地址，由提供方发送任务通知；仅部分模型支持，回调行为以对应模型及提供方协议为准。"
-          },
-          "input_references": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "type",
-                "url"
-              ],
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "image",
-                    "video",
-                    "audio"
-                  ],
-                  "description": "媒体类型"
+    "components": {
+        "securitySchemes": { "bearerAuth": {"type": "http", "scheme": "bearer", "description": "技元 API 密钥"} },
+        "schemas"        : {
+            "VideoTask"             : {
+                "title"      : "视频任务响应",
+                "description": "按 status 选择生成中、成功、错误或状态未知的字段结构。",
+                "oneOf"      : [
+                    {"$ref": "#/components/schemas/VideoTaskGenerating"},
+                    {"$ref": "#/components/schemas/VideoTaskCompleted" },
+                    {"$ref": "#/components/schemas/VideoTaskFailed"    },
+                    {"$ref": "#/components/schemas/VideoTaskUnknown"   }
+                ]
+            },
+            "VideoTaskGenerating"   : {
+                "title"               : "生成中",
+                "description"         : "任务排队或生成中，不返回下载路径。",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["queued", "in_progress"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {"type": "null", "description": "无错误时返回 null。"}
                 },
-                "url": {
-                  "type": "string",
-                  "format": "uri",
-                  "pattern": "^https?://",
-                  "description": "生成期间持续可访问的 HTTP(S) URL"
+                "additionalProperties": true,
+                "examples"            : [
+                    {
+                        "id"        : "video_example",
+                        "object"    : "video",
+                        "model"     : "gxc-doubao-seedance-2-5-260628",
+                        "status"    : "in_progress",
+                        "progress"  : 50,
+                        "created_at": 1793851200,
+                        "error"     : null
+                    }
+                ]
+            },
+            "VideoTaskCompleted"    : {
+                "title"               : "成功",
+                "description"         : "任务成功，可下载视频；有尾帧时返回尾帧下载路径。",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at", "completed_at"],
+                "properties"          : {
+                    "id"            : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"        : {"const": "video", "type": "string"},
+                    "model"         : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"        : { "type": "string", "enum": ["completed"] },
+                    "progress"      : {
+                        "type"       : "integer",
+                        "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+                    },
+                    "created_at"    : {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "completed_at"  : {"type": "integer", "description": "完成时间，Unix 秒级时间戳。"},
+                    "error"         : {"type": "null", "description": "无错误时返回 null。"},
+                    "url"           : {
+                        "type": "string",
+                        "format": "uri-reference",
+                        "pattern": "^/v1/videos/[^/]+/content$",
+                        "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+                    },
+                    "url_last_frame": {
+                        "type": "string",
+                        "format": "uri-reference",
+                        "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
+                        "description": "GXC、TYY 成功且有尾帧时返回的相对下载路径 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 API 密钥认证；HC、MYU、ME 不返回此字段。"
+                    }
                 },
-                "role": {
-                  "type": "string",
-                  "enum": [
-                    "reference",
-                    "first_frame",
-                    "last_frame"
-                  ],
-                  "default": "reference",
-                  "description": "素材用途，首帧和尾帧仅适用于图片"
-                }
-              },
-              "if": {
-                "required": [
-                  "type"
-                ],
+                "additionalProperties": true,
+                "examples"            : [
+                    {
+                        "id"            : "video_example",
+                        "object"        : "video",
+                        "model"         : "gxc-doubao-seedance-2-5-260628",
+                        "status"        : "completed",
+                        "progress"      : 100,
+                        "created_at"    : 1793851200,
+                        "error"         : null,
+                        "completed_at"  : 1793851260,
+                        "url"           : "/v1/videos/video_example/content",
+                        "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
+                    }
+                ]
+            },
+            "VideoTaskFailed"       : {
+                "title"               : "错误",
+                "description"         : "任务失败，有失败原因时返回 error.message，不返回下载路径。",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["failed"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {
+                        "type": ["object", "null"],
+                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required": ["message"],
+                        "properties": { "message": {"type": "string", "description": "任务失败原因"} }
+                    }
+                },
+                "additionalProperties": true,
+                "examples"            : [
+                    {
+                        "id"        : "video_example",
+                        "object"    : "video",
+                        "model"     : "gxc-doubao-seedance-2-5-260628",
+                        "status"    : "failed",
+                        "progress"  : 0,
+                        "created_at": 1793851200,
+                        "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
+                    }
+                ]
+            },
+            "VideoTaskUnknown"      : {
+                "title"               : "状态未知",
+                "description"         : "暂时无法确定任务状态，可继续查询；不返回下载路径。",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["unknown"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {
+                        "type": ["object", "null"],
+                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required": ["message"],
+                        "properties": { "message": {"type": "string", "description": "任务失败原因"} }
+                    }
+                },
+                "additionalProperties": true
+            },
+            "VideoGenerationRequest": {
+                "title": "视频生成提交参数",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["model"],
                 "properties": {
-                  "type": {
-                    "enum": [
-                      "video",
-                      "audio"
-                    ]
-                  }
-                }
-              },
-              "then": {
+                    "model"           : {
+                        "type": "string",
+                        "description": "必填。模型完整调用名，包含渠道前缀，例如 gxc-doubao-seedance-2-5-260628；详见对应模型文档。",
+                        "minLength": 1,
+                        "pattern": "\\S"
+                    },
+                    "prompt"          : {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "\\S",
+                        "description": "视频描述，不得为空或仅包含空白字符。部分模型必填，其他模型允许提供参考素材后省略；长度限制见模型文档。"
+                    },
+                    "seconds"         : {
+                        "type": "integer",
+                        "description": "整数秒。当前模型支持的时长范围及默认值不同；部分模型支持 -1 智能时长。是否必填及素材、分辨率关联限制见模型文档。"
+                    },
+                    "resolution"      : {
+                        "type": "string",
+                        "description": "输出分辨率。当前取值集合为 480p、720p、768p、1080p、2K、4K，区分大小写；每个模型仅支持其中一部分，默认值见模型文档。"
+                    },
+                    "aspect_ratio"    : {
+                        "type": "string",
+                        "enum": ["16:9", "9:16", "1:1", "21:9", "4:3", "3:4", "media_adaptive"],
+                        "description": "画面比例；media_adaptive 表示根据素材自适应。支持范围、默认值和首尾帧或纯文本场景的限制见模型文档。"
+                    },
+                    "provider_tools"  : {
+                        "type": "array",
+                        "description": "可选的提供方工具配置，当前仅部分模型支持；工具类型为 web_search。不能使用旧字段 tools。",
+                        "items": {
+                            "type"                : "object",
+                            "additionalProperties": false,
+                            "required"            : ["type"],
+                            "properties"          : {
+                                "type": { "type": "string", "enum": ["web_search"], "description": "工具类型" }
+                            }
+                        }
+                    },
+                    "callback_url"    : {
+                        "type": "string",
+                        "format": "uri",
+                        "pattern": "^https?://[^\\s/?#]+(?:[/?#]\\S*)?$",
+                        "description": "可选 HTTP(S) 回调地址，由提供方发送任务通知；仅部分模型支持，回调行为以对应模型及提供方协议为准。"
+                    },
+                    "input_references": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "url"],
+                            "properties": {
+                                "type": {
+                                    "type"       : "string",
+                                    "enum"       : ["image", "video", "audio"],
+                                    "description": "媒体类型"
+                                },
+                                "url" : {
+                                    "type"       : "string",
+                                    "format"     : "uri",
+                                    "pattern"    : "^https?://",
+                                    "description": "生成期间持续可访问的 HTTP(S) URL"
+                                },
+                                "role": {
+                                    "type"       : "string",
+                                    "enum"       : ["reference", "first_frame", "last_frame"],
+                                    "default"    : "reference",
+                                    "description": "素材用途，首帧和尾帧仅适用于图片"
+                                }
+                            },
+                            "if": {
+                                "required"  : ["type"],
+                                "properties": {
+                                    "type": { "enum": ["video", "audio"] }
+                                }
+                            },
+                            "then": {
+                                "properties": { "role": {"const": "reference"} }
+                            }
+                        },
+                        "description": "参考素材对象数组。每项包含 type、url，可选 role。数量、时长、素材组合和首尾帧要求见模型文档。"
+                    },
+                    "options"         : {
+                        "type"                : "object",
+                        "additionalProperties": false,
+                        "description"         : "可选生成选项集合；各模型仅接受其明确支持的选项，默认值见模型文档。",
+                        "properties"          : {
+                            "task_type"            : {
+                                "type"       : "string",
+                                "enum"       : ["auto", "reference", "edit", "extend"],
+                                "description": "任务模式，支持范围及素材要求由模型限定"
+                            },
+                            "video_output_format"  : {
+                                "type"       : "string",
+                                "minLength"  : 1,
+                                "pattern"    : "\\S",
+                                "description": "输出容器格式，当前支持该字段的模型接受 mp4 或 mov。"
+                            },
+                            "return_last_frame"    : {"type": "boolean", "description": "是否返回最后一帧"},
+                            "watermark"            : {"type": "boolean", "description": "是否添加水印"},
+                            "generate_audio"       : {"type": "boolean", "description": "是否生成音频"},
+                            "optimize_prompt"      : {"type": "boolean", "description": "是否优化提示词"},
+                            "video_generation_seed": {
+                                "type": "integer",
+                                "description": "整数随机种子，用于复现生成结果；部分模型支持 -1 随机种子，其他模型仅支持非负种子，范围见模型文档。"
+                            }
+                        }
+                    }
+                },
+                "description": "所有当前渠道共用的请求字段集合。字段是否支持、必填条件、枚举、范围及默认值由具体模型限定；此集合不表示任意字段组合均可提交。"
+            },
+            "VideoRequestError"     : {
+                "title"     : "输入错误",
+                "type"      : "object",
+                "required"  : ["code", "message", "data"],
                 "properties": {
-                  "role": {
-                    "const": "reference"
-                  }
+                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"       },
+                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"},
+                    "data"   : {"type": "null",   "description": "无任务数据"                                  }
                 }
-              }
-            },
-            "description": "参考素材对象数组。每项包含 type、url，可选 role。数量、时长、素材组合和首尾帧要求见模型文档。"
-          },
-          "options": {
-            "type": "object",
-            "additionalProperties": false,
-            "description": "可选生成选项集合；各模型仅接受其明确支持的选项，默认值见模型文档。",
-            "properties": {
-              "task_type": {
-                "type": "string",
-                "enum": [
-                  "auto",
-                  "reference",
-                  "edit",
-                  "extend"
+            }
+        }
+    },
+    "paths"     : {
+        "/v1/videos"             : {
+            "post": {
+                "tags": ["通用视频接口"],
+                "operationId": "createVideo",
+                "summary": "提交视频生成任务",
+                "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
+                "requestBody": {
+                    "required": true,
+                    "content" : {
+                        "application/json": {
+                            "schema"  : {"$ref": "#/components/schemas/VideoGenerationRequest"},
+                            "examples": {
+                                "text"     : {
+                                    "summary": "文生视频（GXC Seedance 2.5）",
+                                    "value"  : {
+                                        "model"       : "gxc-doubao-seedance-2-5-260628",
+                                        "prompt"      : "清晨湖面，一只纸船缓缓漂行",
+                                        "seconds"     : 5,
+                                        "resolution"  : "720p",
+                                        "aspect_ratio": "16:9"
+                                    }
+                                },
+                                "reference": {
+                                    "summary": "参考图片与尾帧输出（GXC Seedance 2.5）",
+                                    "value"  : {
+                                        "model"           : "gxc-doubao-seedance-2-5-260628",
+                                        "prompt"          : "清晨湖面，一只纸船缓缓漂行",
+                                        "seconds"         : 5,
+                                        "resolution"      : "720p",
+                                        "aspect_ratio"    : "16:9",
+                                        "input_references": [
+                                            {
+                                                "type": "image",
+                                                "url" : "https://example.com/reference.jpg",
+                                                "role": "reference"
+                                            }
+                                        ],
+                                        "options"         : {
+                                            "return_last_frame": true,
+                                            "watermark"        : false,
+                                            "generate_audio"   : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "视频任务对象。通过 status 区分生成中、成功与任务失败；异步任务失败与 HTTP 请求错误不同。",
+                        "content": {
+                            "application/json": {
+                                "schema"  : {"$ref": "#/components/schemas/VideoTask"},
+                                "examples": {
+                                    "generating": {
+                                        "summary": "生成中",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "gxc-doubao-seedance-2-5-260628",
+                                            "status"    : "in_progress",
+                                            "progress"  : 50,
+                                            "created_at": 1793851200,
+                                            "error"     : null
+                                        }
+                                    },
+                                    "completed" : {
+                                        "summary": "成功（含尾帧）",
+                                        "value"  : {
+                                            "id"            : "video_example",
+                                            "object"        : "video",
+                                            "model"         : "gxc-doubao-seedance-2-5-260628",
+                                            "status"        : "completed",
+                                            "progress"      : 100,
+                                            "created_at"    : 1793851200,
+                                            "error"         : null,
+                                            "completed_at"  : 1793851260,
+                                            "url"           : "/v1/videos/video_example/content",
+                                            "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
+                                        }
+                                    },
+                                    "failed"    : {
+                                        "summary": "错误（任务失败）",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "gxc-doubao-seedance-2-5-260628",
+                                            "status"    : "failed",
+                                            "progress"  : 0,
+                                            "created_at": 1793851200,
+                                            "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "输入错误",
+                        "content"    : {
+                            "application/json": {
+                                "schema"  : {"$ref": "#/components/schemas/VideoRequestError"},
+                                "examples": {
+                                    "invalid_input": {
+                                        "summary": "输入错误",
+                                        "value"  : {
+                                            "code": "plugin_request_invalid",
+                                            "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
+                                            "data": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/videos/{id}"        : {
+            "get": {
+                "tags": ["通用视频接口"],
+                "operationId": "getVideo",
+                "summary": "查询视频任务",
+                "description": "使用创建响应中的 id 查询。当 status 为 completed 时，推荐使用本次查询结果中的 url 下载视频；相对路径需先拼接 API 服务地址，下载需携带同一 API 密钥。",
+                "parameters": [
+                    {
+                        "name"       : "id",
+                        "in"         : "path",
+                        "required"   : true,
+                        "description": "提交任务返回的公开任务 ID",
+                        "schema"     : {"type": "string"},
+                        "example"    : "video_example"
+                    }
                 ],
-                "description": "任务模式，支持范围及素材要求由模型限定"
-              },
-              "video_output_format": {
-                "type": "string",
-                "minLength": 1,
-                "pattern": "\\S",
-                "description": "输出容器格式，当前支持该字段的模型接受 mp4 或 mov。"
-              },
-              "return_last_frame": {
-                "type": "boolean",
-                "description": "是否返回最后一帧"
-              },
-              "watermark": {
-                "type": "boolean",
-                "description": "是否添加水印"
-              },
-              "generate_audio": {
-                "type": "boolean",
-                "description": "是否生成音频"
-              },
-              "optimize_prompt": {
-                "type": "boolean",
-                "description": "是否优化提示词"
-              },
-              "video_generation_seed": {
-                "type": "integer",
-                "description": "整数随机种子，用于复现生成结果；部分模型支持 -1 随机种子，其他模型仅支持非负种子，范围见模型文档。"
-              }
+                "responses": {
+                    "200": {
+                        "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
+                        "content": {
+                            "application/json": {
+                                "schema"  : {"$ref": "#/components/schemas/VideoTask"},
+                                "examples": {
+                                    "generating": {
+                                        "summary": "生成中",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "gxc-doubao-seedance-2-5-260628",
+                                            "status"    : "in_progress",
+                                            "progress"  : 50,
+                                            "created_at": 1793851200,
+                                            "error"     : null
+                                        }
+                                    },
+                                    "completed" : {
+                                        "summary": "成功（含尾帧）",
+                                        "value"  : {
+                                            "id"            : "video_example",
+                                            "object"        : "video",
+                                            "model"         : "gxc-doubao-seedance-2-5-260628",
+                                            "status"        : "completed",
+                                            "progress"      : 100,
+                                            "created_at"    : 1793851200,
+                                            "error"         : null,
+                                            "completed_at"  : 1793851260,
+                                            "url"           : "/v1/videos/video_example/content",
+                                            "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
+                                        }
+                                    },
+                                    "failed"    : {
+                                        "summary": "错误（任务失败）",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "gxc-doubao-seedance-2-5-260628",
+                                            "status"    : "failed",
+                                            "progress"  : 0,
+                                            "created_at": 1793851200,
+                                            "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-          }
         },
-        "description": "所有当前渠道共用的请求字段集合。字段是否支持、必填条件、枚举、范围及默认值由具体模型限定；此集合不表示任意字段组合均可提交。"
-      },
-      "VideoRequestError": {
-        "title": "输入错误",
-        "type": "object",
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "错误标识，例如 plugin_request_invalid"
-          },
-          "message": {
-            "type": "string",
-            "description": "具体输入校验错误，可能包含插件版本与参数路径"
-          },
-          "data": {
-            "type": "null",
-            "description": "无任务数据"
-          }
+        "/v1/videos/{id}/content": {
+            "get": {
+                "tags": ["通用视频接口"],
+                "operationId": "downloadVideo",
+                "summary": "下载视频",
+                "description": "视频下载接口参考。实际调用流程推荐使用任务查询结果中的 url 获取视频；下载需使用提交时的同一 API 密钥。",
+                "parameters": [
+                    {
+                        "name"       : "id",
+                        "in"         : "path",
+                        "required"   : true,
+                        "description": "提交任务返回的公开任务 ID",
+                        "schema"     : {"type": "string"},
+                        "example"    : "video_example"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "视频文件内容",
+                        "content"    : {
+                            "video/mp4": { "schema": {"type": "string", "format": "binary"} }
+                        }
+                    }
+                }
+            }
         }
-      }
     }
-  },
-  "paths": {
-    "/v1/videos": {
-      "post": {
-        "tags": [
-          "通用视频接口"
-        ],
-        "operationId": "createVideo",
-        "summary": "提交视频生成任务",
-        "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VideoGenerationRequest"
-              },
-              "examples": {
-                "text": {
-                  "summary": "文生视频（GXC Seedance 2.5）",
-                  "value": {
-                    "model": "gxc-doubao-seedance-2-5-260628",
-                    "prompt": "清晨湖面，一只纸船缓缓漂行",
-                    "seconds": 5,
-                    "resolution": "720p",
-                    "aspect_ratio": "16:9"
-                  }
-                },
-                "reference": {
-                  "summary": "参考图片与尾帧输出（GXC Seedance 2.5）",
-                  "value": {
-                    "model": "gxc-doubao-seedance-2-5-260628",
-                    "prompt": "清晨湖面，一只纸船缓缓漂行",
-                    "seconds": 5,
-                    "resolution": "720p",
-                    "aspect_ratio": "16:9",
-                    "input_references": [
-                      {
-                        "type": "image",
-                        "url": "https://example.com/reference.jpg",
-                        "role": "reference"
-                      }
-                    ],
-                    "options": {
-                      "return_last_frame": true,
-                      "watermark": false,
-                      "generate_audio": true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "视频任务对象。通过 status 区分生成中、成功与任务失败；异步任务失败与 HTTP 请求错误不同。",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VideoTask"
-                },
-                "examples": {
-                  "generating": {
-                    "summary": "生成中",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "in_progress",
-                      "progress": 50,
-                      "created_at": 1793851200,
-                      "error": null
-                    }
-                  },
-                  "completed": {
-                    "summary": "成功（含尾帧）",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "completed",
-                      "progress": 100,
-                      "created_at": 1793851200,
-                      "error": null,
-                      "completed_at": 1793851260,
-                      "url": "/v1/videos/video_example/content",
-                      "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
-                    }
-                  },
-                  "failed": {
-                    "summary": "错误（任务失败）",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "failed",
-                      "progress": 0,
-                      "created_at": 1793851200,
-                      "error": {
-                        "message": "视频生成失败，请检查输入素材后重试"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "输入错误",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VideoRequestError"
-                },
-                "examples": {
-                  "invalid_input": {
-                    "summary": "输入错误",
-                    "value": {
-                      "code": "plugin_request_invalid",
-                      "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
-                      "data": null
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/videos/{id}": {
-      "get": {
-        "tags": [
-          "通用视频接口"
-        ],
-        "operationId": "getVideo",
-        "summary": "查询视频任务",
-        "description": "使用创建响应中的 id 查询。当 status 为 completed 时，推荐使用本次查询结果中的 url 下载视频；相对路径需先拼接 API 服务地址，下载需携带同一 API 密钥。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "提交任务返回的公开任务 ID",
-            "schema": {
-              "type": "string"
-            },
-            "example": "video_example"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VideoTask"
-                },
-                "examples": {
-                  "generating": {
-                    "summary": "生成中",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "in_progress",
-                      "progress": 50,
-                      "created_at": 1793851200,
-                      "error": null
-                    }
-                  },
-                  "completed": {
-                    "summary": "成功（含尾帧）",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "completed",
-                      "progress": 100,
-                      "created_at": 1793851200,
-                      "error": null,
-                      "completed_at": 1793851260,
-                      "url": "/v1/videos/video_example/content",
-                      "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
-                    }
-                  },
-                  "failed": {
-                    "summary": "错误（任务失败）",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "gxc-doubao-seedance-2-5-260628",
-                      "status": "failed",
-                      "progress": 0,
-                      "created_at": 1793851200,
-                      "error": {
-                        "message": "视频生成失败，请检查输入素材后重试"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/videos/{id}/content": {
-      "get": {
-        "tags": [
-          "通用视频接口"
-        ],
-        "operationId": "downloadVideo",
-        "summary": "下载视频",
-        "description": "视频下载接口参考。实际调用流程推荐使用任务查询结果中的 url 获取视频；下载需使用提交时的同一 API 密钥。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "提交任务返回的公开任务 ID",
-            "schema": {
-              "type": "string"
-            },
-            "example": "video_example"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "视频文件内容",
-            "content": {
-              "video/mp4": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 }

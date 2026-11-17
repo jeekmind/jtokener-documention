@@ -1,898 +1,547 @@
 {
-  "openapi": "3.1.0",
-  "servers": [
-    {
-      "url": "https://tokener.jeekmind.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "info": {
-    "title": "ME MiniMax H3",
-    "version": "1.0.0",
-    "description": "JSON 异步视频生成接口。响应字段按任务状态区分。"
-  },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "技元 API 密钥"
-      }
+    "openapi"   : "3.1.0",
+    "servers"   : [ {"url": "https://tokener.jeekmind.com"} ],
+    "security"  : [ {"bearerAuth": []} ],
+    "info"      : {
+        "title"      : "ME MiniMax H3",
+        "version"    : "1.0.0",
+        "description": "JSON 异步视频生成接口。响应字段按任务状态区分。"
     },
-    "schemas": {
-      "VideoTaskGenerating": {
-        "title": "生成中",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at",
-          "error"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "queued",
-              "in_progress"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": "null",
-            "description": "无错误时返回 null"
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "me-MiniMax-H3",
-            "status": "in_progress",
-            "progress": 0,
-            "created_at": 1793851200,
-            "error": null
-          }
-        ]
-      },
-      "VideoTaskCompleted": {
-        "title": "成功",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at",
-          "error",
-          "completed_at",
-          "url"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "completed"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "completed_at": {
-            "type": "integer",
-            "description": "完成时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": "null",
-            "description": "成功时固定为 null"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri-reference",
-            "pattern": "^/v1/videos/[^/]+/content$",
-            "description": "成功时返回的网关主视频下载路径 /v1/videos/{id}/content，不含 BaseURL；使用公开任务 ID，需 New API Key 认证"
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "me-MiniMax-H3",
-            "status": "completed",
-            "progress": 100,
-            "created_at": 1793851200,
-            "error": null,
-            "completed_at": 1793851260,
-            "url": "/v1/videos/video_example/content"
-          }
-        ]
-      },
-      "VideoTaskFailed": {
-        "title": "错误",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at",
-          "error"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "failed"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "任务失败原因"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "me-MiniMax-H3",
-            "status": "failed",
-            "progress": 0,
-            "created_at": 1793851200,
-            "error": {
-              "message": "视频生成失败，请检查输入素材后重试"
-            }
-          }
-        ]
-      },
-      "VideoTaskUnknown": {
-        "title": "状态未知",
-        "type": "object",
-        "required": [
-          "id",
-          "object",
-          "model",
-          "status",
-          "progress",
-          "created_at",
-          "error"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "网关公开任务 ID，用于后续查询和下载"
-          },
-          "object": {
-            "const": "video",
-            "type": "string"
-          },
-          "model": {
-            "type": "string",
-            "description": "客户端请求的模型名称"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "unknown"
-            ]
-          },
-          "progress": {
-            "type": "integer",
-            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-          },
-          "created_at": {
-            "type": "integer",
-            "description": "任务创建时间，Unix 秒级时间戳"
-          },
-          "error": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "任务失败原因"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": true,
-        "examples": [
-          {
-            "id": "video_example",
-            "object": "video",
-            "model": "me-MiniMax-H3",
-            "status": "unknown",
-            "progress": 0,
-            "created_at": 1793851200,
-            "error": {
-              "message": "暂时无法确定任务状态，请稍后查询"
-            }
-          }
-        ]
-      },
-      "VideoTask": {
-        "title": "视频任务响应",
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/VideoTaskGenerating"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskCompleted"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskFailed"
-          },
-          {
-            "$ref": "#/components/schemas/VideoTaskUnknown"
-          }
-        ]
-      },
-      "VideoGenerationRequest": {
-        "title": "VideoGenerationRequest",
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "model",
-          "prompt",
-          "seconds",
-          "resolution"
-        ],
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "模型调用名",
-            "minLength": 1,
-            "pattern": "\\S",
-            "const": "me-MiniMax-H3"
-          },
-          "prompt": {
-            "type": "string",
-            "maxLength": 7000,
-            "minLength": 1,
-            "pattern": "\\S",
-            "description": "非空且不能仅包含空白字符的视频描述"
-          },
-          "seconds": {
-            "type": "integer",
-            "minimum": 4,
-            "description": "输出视频时长，单位为秒；2K 最长 15 秒，其他分辨率最长 30 秒",
-            "maximum": 30
-          },
-          "resolution": {
-            "type": "string",
-            "description": "输出视频分辨率",
-            "enum": [
-              "480p",
-              "768p",
-              "1080p",
-              "2K"
-            ],
-            "default": "768p"
-          },
-          "aspect_ratio": {
-            "type": "string",
-            "enum": [
-              "16:9",
-              "9:16",
-              "1:1",
-              "21:9",
-              "4:3",
-              "3:4",
-              "media_adaptive"
-            ],
-            "description": "画面比例",
-            "default": "media_adaptive"
-          },
-          "input_references": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "type",
-                "url"
-              ],
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "image",
-                    "video",
-                    "audio"
-                  ],
-                  "description": "媒体类型"
+    "components": {
+        "securitySchemes": { "bearerAuth": {"type": "http", "scheme": "bearer", "description": "技元 API 密钥"} },
+        "schemas"        : {
+            "VideoTaskGenerating"   : {
+                "title"               : "生成中",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["queued", "in_progress"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {"type": "null", "description": "无错误时返回 null"}
                 },
-                "url": {
-                  "type": "string",
-                  "format": "uri",
-                  "pattern": "^https?://",
-                  "description": "生成期间持续可访问的 HTTP(S) URL"
-                },
-                "role": {
-                  "type": "string",
-                  "enum": [
-                    "reference",
-                    "first_frame",
-                    "last_frame"
-                  ],
-                  "default": "reference",
-                  "description": "素材用途，首帧和尾帧仅适用于图片"
-                }
-              },
-              "if": {
-                "required": [
-                  "type"
+                "additionalProperties": true,
+                "examples"            : [
+                    {
+                        "id"        : "video_example",
+                        "object"    : "video",
+                        "model"     : "me-MiniMax-H3",
+                        "status"    : "in_progress",
+                        "progress"  : 0,
+                        "created_at": 1793851200,
+                        "error"     : null
+                    }
+                ]
+            },
+            "VideoTaskCompleted"    : {
+                "title"               : "成功",
+                "type"                : "object",
+                "required"            : [
+                    "id",           "object",       "model",        "status",       "progress",     "created_at",
+                    "error",        "completed_at", "url"
                 ],
-                "properties": {
-                  "type": {
-                    "enum": [
-                      "video",
-                      "audio"
-                    ]
-                  }
-                }
-              },
-              "then": {
-                "properties": {
-                  "role": {
-                    "const": "reference"
-                  }
-                }
-              }
+                "properties"          : {
+                    "id"          : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"      : {"const": "video", "type": "string"},
+                    "model"       : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"      : { "type": "string", "enum": ["completed"] },
+                    "progress"    : {
+                        "type"       : "integer",
+                        "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+                    },
+                    "created_at"  : {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "completed_at": {"type": "integer", "description": "完成时间，Unix 秒级时间戳"},
+                    "error"       : {"type": "null", "description": "成功时固定为 null"},
+                    "url"         : {
+                        "type": "string",
+                        "format": "uri-reference",
+                        "pattern": "^/v1/videos/[^/]+/content$",
+                        "description": "成功时返回的网关主视频下载路径 /v1/videos/{id}/content，不含 BaseURL；使用公开任务 ID，需 New API Key 认证"
+                    }
+                },
+                "additionalProperties": true,
+                "examples"            : [
+                    {
+                        "id"          : "video_example",
+                        "object"      : "video",
+                        "model"       : "me-MiniMax-H3",
+                        "status"      : "completed",
+                        "progress"    : 100,
+                        "created_at"  : 1793851200,
+                        "error"       : null,
+                        "completed_at": 1793851260,
+                        "url"         : "/v1/videos/video_example/content"
+                    }
+                ]
             },
-            "description": "参考素材，图片合计最多 9 张，包含首帧和尾帧",
-            "allOf": [
-              {
-                "contains": {
-                  "type": "object",
-                  "required": [
-                    "type"
-                  ],
-                  "properties": {
-                    "type": {
-                      "const": "image"
+            "VideoTaskFailed"       : {
+                "title"               : "错误",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["failed"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {
+                        "type": ["object", "null"],
+                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required": ["message"],
+                        "properties": { "message": {"type": "string", "description": "任务失败原因"} },
+                        "additionalProperties": false
                     }
-                  }
                 },
-                "minContains": 0,
-                "maxContains": 9
-              },
-              {
-                "description": "首帧图片最多一张",
-                "contains": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "const": "image"
-                    },
-                    "role": {
-                      "const": "first_frame"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "role"
-                  ]
-                },
-                "minContains": 0,
-                "maxContains": 1
-              },
-              {
-                "description": "尾帧图片最多一张",
-                "contains": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "const": "image"
-                    },
-                    "role": {
-                      "const": "last_frame"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "role"
-                  ]
-                },
-                "minContains": 0,
-                "maxContains": 1
-              },
-              {
-                "description": "参考视频最多三个",
-                "contains": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "const": "video"
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ]
-                },
-                "minContains": 0,
-                "maxContains": 3
-              },
-              {
-                "description": "参考音频最多三个",
-                "contains": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "const": "audio"
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ]
-                },
-                "minContains": 0,
-                "maxContains": 3
-              },
-              {
-                "description": "禁止首尾帧与参考素材混用，省略 role 的图片视为参考图片",
-                "not": {
-                  "allOf": [
+                "additionalProperties": true,
+                "examples"            : [
                     {
-                      "contains": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "const": "image"
-                          },
-                          "role": {
-                            "enum": [
-                              "first_frame",
-                              "last_frame"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "type",
-                          "role"
-                        ]
-                      }
-                    },
+                        "id"        : "video_example",
+                        "object"    : "video",
+                        "model"     : "me-MiniMax-H3",
+                        "status"    : "failed",
+                        "progress"  : 0,
+                        "created_at": 1793851200,
+                        "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
+                    }
+                ]
+            },
+            "VideoTaskUnknown"      : {
+                "title"               : "状态未知",
+                "type"                : "object",
+                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties"          : {
+                    "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object"    : {"const": "video", "type": "string"},
+                    "model"     : {"type": "string", "description": "客户端请求的模型名称"},
+                    "status"    : { "type": "string", "enum": ["unknown"] },
+                    "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "error"     : {
+                        "type": ["object", "null"],
+                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required": ["message"],
+                        "properties": { "message": {"type": "string", "description": "任务失败原因"} },
+                        "additionalProperties": false
+                    }
+                },
+                "additionalProperties": true,
+                "examples"            : [
                     {
-                      "contains": {
-                        "type": "object",
-                        "anyOf": [
-                          {
+                        "id"        : "video_example",
+                        "object"    : "video",
+                        "model"     : "me-MiniMax-H3",
+                        "status"    : "unknown",
+                        "progress"  : 0,
+                        "created_at": 1793851200,
+                        "error"     : {"message": "暂时无法确定任务状态，请稍后查询"}
+                    }
+                ]
+            },
+            "VideoTask"             : {
+                "title": "视频任务响应",
+                "oneOf": [
+                    {"$ref": "#/components/schemas/VideoTaskGenerating"},
+                    {"$ref": "#/components/schemas/VideoTaskCompleted" },
+                    {"$ref": "#/components/schemas/VideoTaskFailed"    },
+                    {"$ref": "#/components/schemas/VideoTaskUnknown"   }
+                ]
+            },
+            "VideoGenerationRequest": {
+                "title"               : "VideoGenerationRequest",
+                "type"                : "object",
+                "additionalProperties": false,
+                "required"            : ["model", "prompt", "seconds", "resolution"],
+                "properties"          : {
+                    "model"           : {
+                        "type"       : "string",
+                        "description": "模型调用名",
+                        "minLength"  : 1,
+                        "pattern"    : "\\S",
+                        "const"      : "me-MiniMax-H3"
+                    },
+                    "prompt"          : {
+                        "type"       : "string",
+                        "maxLength"  : 7000,
+                        "minLength"  : 1,
+                        "pattern"    : "\\S",
+                        "description": "非空且不能仅包含空白字符的视频描述"
+                    },
+                    "seconds"         : {
+                        "type"       : "integer",
+                        "minimum"    : 4,
+                        "description": "输出视频时长，单位为秒；2K 最长 15 秒，其他分辨率最长 30 秒",
+                        "maximum"    : 30
+                    },
+                    "resolution"      : {
+                        "type"       : "string",
+                        "description": "输出视频分辨率",
+                        "enum"       : ["480p", "768p", "1080p", "2K"],
+                        "default"    : "768p"
+                    },
+                    "aspect_ratio"    : {
+                        "type"       : "string",
+                        "enum"       : ["16:9", "9:16", "1:1", "21:9", "4:3", "3:4", "media_adaptive"],
+                        "description": "画面比例",
+                        "default"    : "media_adaptive"
+                    },
+                    "input_references": {
+                        "type"       : "array",
+                        "items"      : {
                             "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "url"],
                             "properties": {
-                              "type": {
-                                "enum": [
-                                  "video",
-                                  "audio"
-                                ]
-                              }
+                                "type": {
+                                    "type"       : "string",
+                                    "enum"       : ["image", "video", "audio"],
+                                    "description": "媒体类型"
+                                },
+                                "url" : {
+                                    "type"       : "string",
+                                    "format"     : "uri",
+                                    "pattern"    : "^https?://",
+                                    "description": "生成期间持续可访问的 HTTP(S) URL"
+                                },
+                                "role": {
+                                    "type"       : "string",
+                                    "enum"       : ["reference", "first_frame", "last_frame"],
+                                    "default"    : "reference",
+                                    "description": "素材用途，首帧和尾帧仅适用于图片"
+                                }
                             },
-                            "required": [
-                              "type"
-                            ]
-                          },
-                          {
-                            "properties": {
-                              "type": {
-                                "const": "image"
-                              },
-                              "role": {
-                                "const": "reference"
-                              }
+                            "if": {
+                                "required"  : ["type"],
+                                "properties": {
+                                    "type": { "enum": ["video", "audio"] }
+                                }
                             },
-                            "required": [
-                              "type"
-                            ]
-                          }
+                            "then": {
+                                "properties": { "role": {"const": "reference"} }
+                            }
+                        },
+                        "description": "参考素材，图片合计最多 9 张，包含首帧和尾帧",
+                        "allOf"      : [
+                            {
+                                "contains"   : {
+                                    "type"      : "object",
+                                    "required"  : ["type"],
+                                    "properties": { "type": {"const": "image"} }
+                                },
+                                "minContains": 0,
+                                "maxContains": 9
+                            },
+                            {
+                                "description": "首帧图片最多一张",
+                                "contains"   : {
+                                    "type"      : "object",
+                                    "properties": { "type": {"const": "image"}, "role": {"const": "first_frame"} },
+                                    "required"  : ["type", "role"]
+                                },
+                                "minContains": 0,
+                                "maxContains": 1
+                            },
+                            {
+                                "description": "尾帧图片最多一张",
+                                "contains"   : {
+                                    "type"      : "object",
+                                    "properties": { "type": {"const": "image"}, "role": {"const": "last_frame"} },
+                                    "required"  : ["type", "role"]
+                                },
+                                "minContains": 0,
+                                "maxContains": 1
+                            },
+                            {
+                                "description": "参考视频最多三个",
+                                "contains"   : {
+                                    "type"      : "object",
+                                    "properties": { "type": {"const": "video"} },
+                                    "required"  : ["type"]
+                                },
+                                "minContains": 0,
+                                "maxContains": 3
+                            },
+                            {
+                                "description": "参考音频最多三个",
+                                "contains"   : {
+                                    "type"      : "object",
+                                    "properties": { "type": {"const": "audio"} },
+                                    "required"  : ["type"]
+                                },
+                                "minContains": 0,
+                                "maxContains": 3
+                            },
+                            {
+                                "description": "禁止首尾帧与参考素材混用，省略 role 的图片视为参考图片",
+                                "not"        : {
+                                    "allOf": [
+                                        {
+                                            "contains": {
+                                                "type"      : "object",
+                                                "properties": {
+                                                    "type": {"const": "image"},
+                                                    "role": { "enum": ["first_frame", "last_frame"] }
+                                                },
+                                                "required"  : ["type", "role"]
+                                            }
+                                        },
+                                        {
+                                            "contains": {
+                                                "type" : "object",
+                                                "anyOf": [
+                                                    {
+                                                        "type"      : "object",
+                                                        "properties": {
+                                                            "type": { "enum": ["video", "audio"] }
+                                                        },
+                                                        "required"  : ["type"]
+                                                    },
+                                                    {
+                                                        "properties": {
+                                                            "type": {"const": "image"    },
+                                                            "role": {"const": "reference"}
+                                                        },
+                                                        "required"  : ["type"]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "description": "参考音频必须搭配至少一张参考图片或一个参考视频",
+                                "if"         : {
+                                    "contains": {
+                                        "type"      : "object",
+                                        "properties": { "type": {"const": "audio"} },
+                                        "required"  : ["type"]
+                                    }
+                                },
+                                "then"       : {
+                                    "contains": {
+                                        "anyOf": [
+                                            {
+                                                "type"      : "object",
+                                                "properties": {
+                                                    "type": {"const": "image"    },
+                                                    "role": {"const": "reference"}
+                                                },
+                                                "required"  : ["type"]
+                                            },
+                                            {
+                                                "type"      : "object",
+                                                "properties": { "type": {"const": "video"} },
+                                                "required"  : ["type"]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
                         ]
-                      }
                     }
-                  ]
-                }
-              },
-              {
-                "description": "参考音频必须搭配至少一张参考图片或一个参考视频",
-                "if": {
-                  "contains": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "const": "audio"
-                      }
-                    },
-                    "required": [
-                      "type"
-                    ]
-                  }
                 },
-                "then": {
-                  "contains": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "const": "image"
-                          },
-                          "role": {
-                            "const": "reference"
-                          }
+                "allOf"               : [
+                    {
+                        "description": "2K 输出最长十五秒，其他分辨率最长三十秒",
+                        "if"         : {
+                            "properties": { "resolution": {"const": "2K"} },
+                            "required"  : ["resolution"]
                         },
-                        "required": [
-                          "type"
-                        ]
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "const": "video"
-                          }
+                        "then"       : {
+                            "properties": { "seconds": {"type": "integer", "maximum": 15} }
+                        }
+                    },
+                    {
+                        "description": "纯文本生成必须显式指定固定画面比例",
+                        "if"         : {
+                            "not": {
+                                "required"  : ["input_references"],
+                                "properties": { "input_references": {"type": "array", "minItems": 1} }
+                            }
                         },
-                        "required": [
-                          "type"
-                        ]
-                      }
-                    ]
-                  }
-                }
-              }
-            ]
-          }
-        },
-        "allOf": [
-          {
-            "description": "2K 输出最长十五秒，其他分辨率最长三十秒",
-            "if": {
-              "properties": {
-                "resolution": {
-                  "const": "2K"
-                }
-              },
-              "required": [
-                "resolution"
-              ]
+                        "then"       : {
+                            "required"  : ["aspect_ratio"],
+                            "properties": {
+                                "aspect_ratio": { "enum": ["16:9", "9:16", "1:1", "21:9", "4:3", "3:4"] }
+                            }
+                        }
+                    },
+                    {
+                        "description": "首尾帧生成仅允许自适应画面比例",
+                        "if"         : {
+                            "required"  : ["input_references"],
+                            "properties": {
+                                "input_references": {
+                                    "type"    : "array",
+                                    "contains": {
+                                        "type"      : "object",
+                                        "properties": {
+                                            "type": { "const": "image"                                        },
+                                            "role": {                   "enum": ["first_frame", "last_frame"] }
+                                        },
+                                        "required"  : ["type", "role"]
+                                    }
+                                }
+                            }
+                        },
+                        "then"       : {
+                            "properties": { "aspect_ratio": {"const": "media_adaptive"} }
+                        }
+                    }
+                ]
             },
-            "then": {
-              "properties": {
-                "seconds": {
-                  "type": "integer",
-                  "maximum": 15
-                }
-              }
-            }
-          },
-          {
-            "description": "纯文本生成必须显式指定固定画面比例",
-            "if": {
-              "not": {
-                "required": [
-                  "input_references"
-                ],
+            "VideoRequestError"     : {
+                "title"     : "输入错误",
+                "type"      : "object",
+                "required"  : ["code", "message", "data"],
                 "properties": {
-                  "input_references": {
-                    "type": "array",
-                    "minItems": 1
-                  }
+                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"       },
+                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"},
+                    "data"   : {"type": "null",   "description": "无任务数据"                                  }
                 }
-              }
-            },
-            "then": {
-              "required": [
-                "aspect_ratio"
-              ],
-              "properties": {
-                "aspect_ratio": {
-                  "enum": [
-                    "16:9",
-                    "9:16",
-                    "1:1",
-                    "21:9",
-                    "4:3",
-                    "3:4"
-                  ]
-                }
-              }
             }
-          },
-          {
-            "description": "首尾帧生成仅允许自适应画面比例",
-            "if": {
-              "required": [
-                "input_references"
-              ],
-              "properties": {
-                "input_references": {
-                  "type": "array",
-                  "contains": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "const": "image"
-                      },
-                      "role": {
-                        "enum": [
-                          "first_frame",
-                          "last_frame"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "type",
-                      "role"
-                    ]
-                  }
-                }
-              }
-            },
-            "then": {
-              "properties": {
-                "aspect_ratio": {
-                  "const": "media_adaptive"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "VideoRequestError": {
-        "title": "输入错误",
-        "type": "object",
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "错误标识，例如 plugin_request_invalid"
-          },
-          "message": {
-            "type": "string",
-            "description": "具体输入校验错误，可能包含插件版本与参数路径"
-          },
-          "data": {
-            "type": "null",
-            "description": "无任务数据"
-          }
         }
-      }
-    }
-  },
-  "paths": {
-    "/v1/videos": {
-      "post": {
-        "tags": [
-          "ME 视频"
-        ],
-        "operationId": "createMeMinimaxH3",
-        "summary": "ME MiniMax H3 视频生成",
-        "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VideoGenerationRequest"
-              },
-              "examples": {
-                "text": {
-                  "summary": "文生视频",
-                  "value": {
-                    "model": "me-MiniMax-H3",
-                    "prompt": "清晨湖面，一只纸船缓缓漂行",
-                    "seconds": 5,
-                    "resolution": "768p",
-                    "aspect_ratio": "16:9"
-                  }
-                },
-                "reference": {
-                  "summary": "参考图片生视频",
-                  "value": {
-                    "model": "me-MiniMax-H3",
-                    "prompt": "清晨湖面，一只纸船缓缓漂行",
-                    "seconds": 5,
-                    "resolution": "768p",
-                    "aspect_ratio": "16:9",
-                    "input_references": [
-                      {
-                        "type": "image",
-                        "url": "https://example.com/reference.jpg",
-                        "role": "reference"
-                      }
-                    ]
-                  }
-                },
-                "frames": {
-                  "summary": "首尾帧生视频",
-                  "value": {
-                    "model": "me-MiniMax-H3",
-                    "prompt": "清晨湖面，一只纸船缓缓漂行",
-                    "seconds": 5,
-                    "resolution": "768p",
-                    "aspect_ratio": "media_adaptive",
-                    "input_references": [
-                      {
-                        "type": "image",
-                        "url": "https://example.com/first.jpg",
-                        "role": "first_frame"
-                      },
-                      {
-                        "type": "image",
-                        "url": "https://example.com/last.jpg",
-                        "role": "last_frame"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VideoTask"
-                },
-                "examples": {
-                  "generating": {
-                    "summary": "生成中",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "me-MiniMax-H3",
-                      "status": "in_progress",
-                      "progress": 0,
-                      "created_at": 1793851200,
-                      "error": null
+    },
+    "paths"     : {
+        "/v1/videos": {
+            "post": {
+                "tags": ["ME 视频"],
+                "operationId": "createMeMinimaxH3",
+                "summary": "ME MiniMax H3 视频生成",
+                "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
+                "requestBody": {
+                    "required": true,
+                    "content" : {
+                        "application/json": {
+                            "schema"  : {"$ref": "#/components/schemas/VideoGenerationRequest"},
+                            "examples": {
+                                "text"     : {
+                                    "summary": "文生视频",
+                                    "value"  : {
+                                        "model"       : "me-MiniMax-H3",
+                                        "prompt"      : "清晨湖面，一只纸船缓缓漂行",
+                                        "seconds"     : 5,
+                                        "resolution"  : "768p",
+                                        "aspect_ratio": "16:9"
+                                    }
+                                },
+                                "reference": {
+                                    "summary": "参考图片生视频",
+                                    "value"  : {
+                                        "model"           : "me-MiniMax-H3",
+                                        "prompt"          : "清晨湖面，一只纸船缓缓漂行",
+                                        "seconds"         : 5,
+                                        "resolution"      : "768p",
+                                        "aspect_ratio"    : "16:9",
+                                        "input_references": [
+                                            {
+                                                "type": "image",
+                                                "url" : "https://example.com/reference.jpg",
+                                                "role": "reference"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "frames"   : {
+                                    "summary": "首尾帧生视频",
+                                    "value"  : {
+                                        "model"           : "me-MiniMax-H3",
+                                        "prompt"          : "清晨湖面，一只纸船缓缓漂行",
+                                        "seconds"         : 5,
+                                        "resolution"      : "768p",
+                                        "aspect_ratio"    : "media_adaptive",
+                                        "input_references": [
+                                            {
+                                                "type": "image",
+                                                "url" : "https://example.com/first.jpg",
+                                                "role": "first_frame"
+                                            },
+                                            {
+                                                "type": "image",
+                                                "url" : "https://example.com/last.jpg",
+                                                "role": "last_frame"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
                     }
-                  },
-                  "completed": {
-                    "summary": "成功",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "me-MiniMax-H3",
-                      "status": "completed",
-                      "progress": 100,
-                      "created_at": 1793851200,
-                      "error": null,
-                      "completed_at": 1793851260,
-                      "url": "/v1/videos/video_example/content"
-                    }
-                  },
-                  "failed": {
-                    "summary": "错误",
-                    "value": {
-                      "id": "video_example",
-                      "object": "video",
-                      "model": "me-MiniMax-H3",
-                      "status": "failed",
-                      "progress": 0,
-                      "created_at": 1793851200,
-                      "error": {
-                        "message": "视频生成失败，请检查输入素材后重试"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "输入错误",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VideoRequestError"
                 },
-                "examples": {
-                  "invalid_input": {
-                    "summary": "输入错误",
-                    "value": {
-                      "code": "plugin_request_invalid",
-                      "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
-                      "data": null
+                "responses": {
+                    "200": {
+                        "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
+                        "content": {
+                            "application/json": {
+                                "schema"  : {"$ref": "#/components/schemas/VideoTask"},
+                                "examples": {
+                                    "generating": {
+                                        "summary": "生成中",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "me-MiniMax-H3",
+                                            "status"    : "in_progress",
+                                            "progress"  : 0,
+                                            "created_at": 1793851200,
+                                            "error"     : null
+                                        }
+                                    },
+                                    "completed" : {
+                                        "summary": "成功",
+                                        "value"  : {
+                                            "id"          : "video_example",
+                                            "object"      : "video",
+                                            "model"       : "me-MiniMax-H3",
+                                            "status"      : "completed",
+                                            "progress"    : 100,
+                                            "created_at"  : 1793851200,
+                                            "error"       : null,
+                                            "completed_at": 1793851260,
+                                            "url"         : "/v1/videos/video_example/content"
+                                        }
+                                    },
+                                    "failed"    : {
+                                        "summary": "错误",
+                                        "value"  : {
+                                            "id"        : "video_example",
+                                            "object"    : "video",
+                                            "model"     : "me-MiniMax-H3",
+                                            "status"    : "failed",
+                                            "progress"  : 0,
+                                            "created_at": 1793851200,
+                                            "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
-                    "description": "GXC 渠道的输入校验错误示例。实际插件名、版本、参数路径及校验消息以当前模型返回为准。"
-                  }
+                    "400": {
+                        "description": "输入错误",
+                        "content"    : {
+                            "application/json": {
+                                "schema"  : {"$ref": "#/components/schemas/VideoRequestError"},
+                                "examples": {
+                                    "invalid_input": {
+                                        "summary": "输入错误",
+                                        "value": {
+                                            "code": "plugin_request_invalid",
+                                            "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
+                                            "data": null
+                                        },
+                                        "description": "GXC 渠道的输入校验错误示例。实际插件名、版本、参数路径及校验消息以当前模型返回为准。"
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      }
     }
-  }
 }
