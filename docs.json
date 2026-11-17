@@ -43,7 +43,8 @@
                   "api-reference/generation",
                   "api-reference/videos/create",
                   "api-reference/videos/retrieve",
-                  "api-reference/videos/content"
+                  "api-reference/videos/content",
+                  "api-reference/errors"
                 ]
               },
               {

@@ -1,0 +1,47 @@
+---
+title: "错误处理"
+description: "通过 HTTP 状态码识别请求错误，读取错误原因，并区分异步任务失败。"
+---
+
+## 判断请求是否出错
+
+先检查响应的 HTTP 状态码。所有非 `2xx` 状态码均表示请求错误；`2xx` 指 `200`–`299`。
+
+收到非 `2xx` 响应时，按错误响应处理，不要将响应体作为正常的任务对象或视频文件解析。读取 `error` 中的错误原因，再决定如何处理请求。
+
+## 错误响应示例
+
+```json
+{
+  "error": {
+    "code": "model_not_found",
+    "message": "No available channel for model gxc-doubao-seedance-2-0-260128 under group default (distributor) (request id: 1234)",
+    "type": "new_api_error"
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `error` | object | 错误详情 |
+| `error.code` | string | 错误标识，示例为 `model_not_found` |
+| `error.message` | string | 具体错误原因，可能包含请求 ID |
+| `error.type` | string | 错误类型，示例为 `new_api_error` |
+
+该示例表示请求所用分组 `default` 下，模型 `gxc-doubao-seedance-2-0-260128` 没有可用渠道。请检查模型调用名、API 密钥所属分组及可用渠道配置。排查问题时，保留 HTTP 状态码、错误信息和消息中的请求 ID。
+
+不同错误的字段值和消息会变化。若响应体无法解析为上述 JSON 结构，仍以非 `2xx` 状态码判定请求错误，并保留原始响应供排查。
+
+## 区分请求错误与任务失败
+
+视频生成是异步任务。HTTP 请求成功不代表视频已经生成成功。
+
+| 场景 | 判断方式 | 处理方式 |
+| --- | --- | --- |
+| 请求错误 | HTTP 状态码非 `2xx` | 读取错误原因，修正请求或处理服务异常 |
+| 任务生成中 | HTTP 状态码为 `2xx`，任务 `status` 为 `queued` 或 `in_progress` | 保存任务 `id`，继续查询 |
+| 任务成功 | HTTP 状态码为 `2xx`，任务 `status` 为 `completed` | 下载生成结果 |
+| 任务失败 | HTTP 状态码为 `2xx`，任务 `status` 为 `failed` | 读取任务响应的 `error.message`，没有原因时 `error` 可能为 `null` |
+| 任务状态未知 | HTTP 状态码为 `2xx`，任务 `status` 为 `unknown` | 使用同一任务 `id` 继续查询确认 |
+
+提交任务后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)，根据任务状态处理结果。不要仅凭 HTTP `200` 判断生成成功。
