@@ -1,0 +1,106 @@
+---
+title: "提交视频生成任务"
+description: "汇总视频生成提交接口的全部请求字段，模型实际支持范围请查看对应调用文档。"
+openapi: "api-reference/video.openapi.json POST /v1/videos"
+---
+
+使用 `POST /v1/videos` 提交异步视频生成任务。接口基础地址为 `https://tokener.jeekmind.com`，请求体使用 JSON。
+
+<Note>
+  本页汇总当前渠道所有可能使用的字段。每个模型仅支持其中一部分。字段是否必填、取值范围、默认值及组合限制，请以对应模型的调用文档为准。不支持的字段会被拒绝，请勿将全部字段直接组合提交。
+</Note>
+
+## 请求头
+
+| 请求头 | 必填 | 说明 |
+| --- | --- | --- |
+| `Authorization` | 是 | `Bearer YOUR_API_KEY`，使用你的技元 API 密钥 |
+| `Content-Type` | 是 | `application/json` |
+
+## 请求字段
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `model` | string | 必填，包含渠道前缀的模型调用名 |
+| `prompt` | string | 非空白的视频描述；部分模型必填，部分模型允许提供素材后省略 |
+| `seconds` | integer | 输出时长，单位为秒；部分模型支持 `-1` 智能时长，范围和默认值因模型而异 |
+| `resolution` | string | 分辨率，当前取值集合为 `480p`、`720p`、`768p`、`1080p`、`2K`、`4K`，区分大小写 |
+| `aspect_ratio` | string | 比例，当前取值集合为 `16:9`、`9:16`、`1:1`、`21:9`、`4:3`、`3:4`、`media_adaptive` |
+| `input_references` | object[] | 图片、视频或音频素材，结构见下表 |
+| `options` | object | 生成选项，结构见下表 |
+| `provider_tools` | object[] | 提供方工具，仅部分模型支持 |
+| `callback_url` | string | 提供方发送任务通知的 HTTP(S) 回调地址，仅部分模型支持 |
+
+以上取值为各模型支持范围的合集。不同模型的时长、分辨率、比例和素材存在关联限制，没有统一的默认值。
+
+### 参考素材 `input_references[]`
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `type` | string | 是 | `image`、`video` 或 `audio` |
+| `url` | string | 是 | 生成期间持续可访问的 HTTP(S) URL |
+| `role` | string | 否 | 默认 `reference`；部分模型还支持图片的 `first_frame`、`last_frame` 用途 |
+
+首尾帧只适用于图片。素材数量、文件限制、时长和能否混用不同用途，请查看模型文档。当前接口不接受 Base64、文件上传或 `asset://` 素材。
+
+### 生成选项 `options`
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `task_type` | string | `auto`、`reference`、`edit` 或 `extend`；编辑和延长模式有素材要求 |
+| `video_output_format` | string | 视频容器格式，当前支持该字段的模型接受 `mp4` 或 `mov` |
+| `return_last_frame` | boolean | 是否返回尾帧图片 |
+| `watermark` | boolean | 是否添加水印 |
+| `generate_audio` | boolean | 是否生成音频 |
+| `optimize_prompt` | boolean | 是否优化提示词 |
+| `video_generation_seed` | integer | 随机种子；是否接受 `-1`、非负范围和默认值由模型限定 |
+
+选项放在 `options` 内，不要放在请求体顶层。部分模型不接受整个 `options` 对象。
+
+### 提供方工具 `provider_tools[]`
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `type` | string | 是 | 当前仅 `web_search` |
+
+```json
+{
+  "provider_tools": [{ "type": "web_search" }]
+}
+```
+
+上例仅展示字段结构，不是完整请求。回调地址和工具支持范围见模型文档；请勿假定不同渠道使用相同的回调载荷。
+
+## 请求示例
+
+以下示例使用 GXC Seedance 2.5，生成一段 5 秒的视频。
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/videos' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "gxc-doubao-seedance-2-5-260628",
+    "prompt": "清晨湖面，一只纸船缓缓漂行",
+    "seconds": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9"
+  }'
+```
+
+不要使用旧字段 `duration`、`ratio`、`tools`、`matadata`、`image_references`、`video_references`、`audio_references`、`image_urls`、`video_urls` 或 `audio_urls`。
+
+## 选择模型调用文档
+
+| 系列 | 渠道与模型 |
+| --- | --- |
+| Seedance | [GXC 2.5](/api-reference/gxc/seedance25)、[GXC 2.0](/api-reference/gxc/seedance20)、[GXC 2.0 Fast](/api-reference/gxc/seedance20-fast) |
+| Seedance | [TYY 2.5](/api-reference/tyy/seedance25)、[TYY 2.0](/api-reference/tyy/seedance20)、[TYY 2.0 Fast](/api-reference/tyy/seedance20-fast)、[TYY 2.0 Mini](/api-reference/tyy/seedance20-mini) |
+| 通义万相 | [HC 3.0](/api-reference/hc/wan3)、[HC 3.0 Prime](/api-reference/hc/wan3-prime)、[MYU 3.0](/api-reference/myu/wan3)、[MYU 3.0 Prime](/api-reference/myu/wan3-prime) |
+| MiniMax | [ME H3](/api-reference/me/minimax-h3) |
+
+## 提交后的操作
+
+保存返回的 `id`，使用同一 API 密钥[查询视频任务](/api-reference/videos/retrieve)。提交成功表示任务已受理，最终结果以 `status` 为准。
+
+任务成功后，通过 `url` [下载视频](/api-reference/videos/content)。仅 GXC、TYY 在成功且有尾帧时返回可选的 `url_last_frame`。响应结构按生成中、成功、错误区分，`unknown` 表示暂时无法确定状态。
