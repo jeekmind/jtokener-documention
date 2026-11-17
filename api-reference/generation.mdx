@@ -70,94 +70,56 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
 
 ### 返回字段
 
-| 字段 | 说明 |
-| --- | --- |
-| `success` | 示例中为 `true` |
-| `object` | 列表对象，示例中为 `list` |
-| `data` | 模型列表 |
-| `data[].id` | 模型标识，提交任务时用作 `model` |
-| `data[].object` | 对象类型，示例中为 `model` |
-| `data[].created` | 模型创建时间戳 |
-| `data[].owned_by` | 模型归属信息 |
-| `data[].supported_endpoint_types` | 支持的接口类型标识；具体调用路径和参数请参考对应接口文档 |
+以下按 GXC 任务状态列出字段。
 
-## 2. 请求生成任务（图、视频）
+<Tabs>
+  <Tab title="生成中">
 
-### 视频生成
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `queued`（排队中）或 `in_progress`（生成中） |
+| `progress` | integer | 当前生成进度 |
+| `error` | null | 无错误时为 `null` |
 
-`POST /v1/videos`
+  </Tab>
+  <Tab title="成功">
 
-以下示例使用 `gxc-doubao-seedance-2-5-260628` 模型，提交一段飞机在云层中穿行的视频生成任务。
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `completed` |
+| `progress` | integer | 完成进度，示例为 `100` |
+| `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
+| `error` | null | 固定为 `null` |
+| `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
+| `url_last_frame` | string | 可选，有尾帧时返回；认证方式同视频下载 |
 
-```bash
-curl --location --request POST 'https://tokener.jeekmind.com/v1/videos' \
-  --header 'Content-Type: application/json' \
-  --header 'Authorization: Bearer YOUR_API_KEY' \
-  --data '{
-    "model": "gxc-doubao-seedance-2-5-260628",
-    "prompt": "飞机在云层中穿行",
-    "seconds": 4,
-    "resolution": "720p"
-  }'
-```
+  </Tab>
+  <Tab title="错误">
 
-### 示例请求参数
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `failed` |
+| `progress` | integer | 失败时的进度，不代表生成成功 |
+| `error` | object 或 null | 有失败原因时为对象，否则为 `null` |
+| `error.message` | string | `error` 为对象时返回的失败原因 |
 
-| 参数 | 示例类型 | 示例值 | 说明 |
-| --- | --- | --- | --- |
-| `model` | string | `gxc-doubao-seedance-2-5-260628` | 必填，模型标识 |
-| `prompt` | string | `飞机在云层中穿行` | 必填，描述你希望生成的内容，不能仅包含空白字符 |
-| `seconds` | integer | `4` | 可选，视频时长，单位为秒，默认 5 秒；Seedance 2.5 支持 4–30 秒 |
-| `resolution` | string | `720p` | 可选，Seedance 2.5 支持 `720p`、`1080p`，默认 `720p`，区分大小写 |
+  </Tab>
+</Tabs>
 
-你可以使用 `input_references` 传入参考素材，通过 `options` 设置音频、水印和尾帧选项。完整参数和模型差异见 [GXC 概览](/api-reference/gxc/index)及 [Seedance 2.5](/api-reference/gxc/seedance25)。
+生成中和错误响应不返回 `url` 或 `url_last_frame`。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
 
-## 3. 查询视频任务
-
-`GET /v1/videos/{id}`
-
-将 `YOUR_TASK_ID` 替换为提交视频任务返回的 `id`，使用同一 API 密钥查询任务状态和进度，并在任务完成后从响应的 `final_cost` 字段读取本次费用。完整参数说明见[查询视频任务](/api-reference/videos/retrieve)。
-
-### 请求示例
-
-```bash
-curl --location --request GET 'https://tokener.jeekmind.com/v1/videos/YOUR_TASK_ID' \
-  --header 'Authorization: Bearer YOUR_API_KEY'
-```
-
-### 返回示例
-
-以下为任务完成时的演示响应：
-
-```json
-{
-  "id": "task_example",
-  "object": "video",
-  "model": "gxc-doubao-seedance-2-5-260628",
-  "status": "completed",
-  "progress": 100,
-  "created_at": 1700000000,
-  "completed_at": 1700000300,
-  "final_cost": 1.4,
-  "error": null,
-  "url": "/v1/videos/task_example/content"
-}
-```
-
-### 返回字段
-
-| 字段 | 说明 |
-| --- | --- |
-| `id` | 公开任务 ID，用于后续查询和下载 |
-| `object` | 对象类型，固定为 `video` |
-| `model` | 客户端请求的模型名称 |
-| `status` | 任务状态：`queued`（排队中）、`in_progress`（进行中）、`completed`（已完成）、`failed`（失败）或 `unknown`（未知） |
-| `progress` | 任务进度，整数类型 |
-| `created_at` | 创建时间，Unix 秒级时间戳 |
-| `completed_at` | 完成时间，Unix 秒级时间戳；任务未完成时可能省略 |
-| `error` | GXC 始终返回；无错误或成功时为 `null`，有失败原因时为包含 `message` 的对象 |
-| `url` | GXC 成功时返回的视频下载相对路径，需拼接 API 服务地址并携带同一 API 密钥 |
-| `url_last_frame` | GXC 成功且有尾帧时返回的尾帧下载相对路径，认证方式同视频下载 |
-| `final_cost` | 本次任务的最终费用，单位为人民币元。示例中的 `1.4` 表示人民币 1.4 元 |
+任务成功时，服务还可能返回 `final_cost`，表示本次任务的最终费用，单位为人民币元。
 
 任务未完成时，可继续使用同一 `id` 查询。`status` 为 `completed` 后，通过 `GET /v1/videos/{id}/content` [下载视频](/api-reference/videos/content)。

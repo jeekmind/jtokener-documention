@@ -70,6 +70,28 @@ description: "了解 GXC 视频模型的参数范围、参考素材结构和生�
 
 这两个字段均为相对路径。将路径拼接到你的 API 服务地址后，携带 `Authorization: Bearer YOUR_API_KEY` 下载。
 
+<Tabs>
+  <Tab title="生成中">
+
+`status` 为 `queued` 或 `in_progress` 时，继续使用同一任务 ID 查询。以下示例为生成中；无错误时 `error` 为 `null`，不返回下载路径。
+
+```json
+{
+  "id": "video_example",
+  "object": "video",
+  "model": "gxc-doubao-seedance-2-5-260628",
+  "status": "in_progress",
+  "progress": 50,
+  "created_at": 1793851200,
+  "error": null
+}
+```
+
+  </Tab>
+  <Tab title="成功">
+
+`status` 为 `completed` 时，你可以下载视频。以下示例包含尾帧；没有尾帧时省略 `url_last_frame`。
+
 ```json
 {
   "id": "video_example",
@@ -78,12 +100,88 @@ description: "了解 GXC 视频模型的参数范围、参考素材结构和生�
   "status": "completed",
   "progress": 100,
   "created_at": 1793851200,
-  "completed_at": 1793851260,
   "error": null,
+  "completed_at": 1793851260,
   "url": "/v1/videos/video_example/content",
   "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
 }
 ```
+
+  </Tab>
+  <Tab title="错误">
+
+`status` 为 `failed` 表示任务失败。有失败原因时，从 `error.message` 读取；没有失败原因时 `error` 为 `null`。失败时不返回下载路径，`progress` 不代表成功。
+
+```json
+{
+  "id": "video_example",
+  "object": "video",
+  "model": "gxc-doubao-seedance-2-5-260628",
+  "status": "failed",
+  "progress": 0,
+  "created_at": 1793851200,
+  "error": {
+    "message": "视频生成失败，请检查输入素材后重试"
+  }
+}
+```
+
+  </Tab>
+</Tabs>
+
+`unknown` 表示当前无法确定任务状态，可继续查询确认。以上错误示例为任务失败响应；HTTP 请求错误的状态码和响应体由 API 服务返回。
+
+### 响应字段
+
+<Tabs>
+  <Tab title="生成中">
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `queued`（排队中）或 `in_progress`（生成中） |
+| `progress` | integer | 当前生成进度 |
+| `error` | null | 无错误时为 `null` |
+
+  </Tab>
+  <Tab title="成功">
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `completed` |
+| `progress` | integer | 完成进度，示例为 `100` |
+| `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
+| `error` | null | 固定为 `null` |
+| `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
+| `url_last_frame` | string | 可选，有尾帧时返回；认证方式同视频下载 |
+
+  </Tab>
+  <Tab title="错误">
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | string | 公开任务 ID，用于后续查询和下载 |
+| `object` | string | 固定为 `video` |
+| `model` | string | 客户端请求的模型名称 |
+| `created_at` | integer | 创建时间，Unix 秒级时间戳 |
+| `status` | string | `failed` |
+| `progress` | integer | 失败时的进度，不代表生成成功 |
+| `error` | object 或 null | 有失败原因时为对象，否则为 `null` |
+| `error.message` | string | `error` 为对象时返回的失败原因 |
+
+  </Tab>
+</Tabs>
+
+生成中和错误响应不返回 `url` 或 `url_last_frame`。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
+
+### 下载示例
 
 ```bash
 # 下载视频
