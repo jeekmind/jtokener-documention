@@ -1,0 +1,30 @@
+---
+title: "TYY Seedance 2.0"
+openapi: "api-reference/tyy/seedance20.openapi.json POST /v1/videos"
+---
+
+## 参数与素材规则
+
+`model` 必填。你必须提供非空白 `prompt` 或至少一个素材。`seconds` 支持 `-1` 或整数 4–15 秒；省略时不补值。分辨率支持 `480p`、`720p`、`1080p`、`4K`，默认 `720p`；比例默认 `media_adaptive`。
+
+普通参考图片 / 视频 / 音频数量上限为 9 / 3 / 3。普通参考素材必须包含图片或视频，不能只有音频。
+
+首尾帧模式必须提供一张 `first_frame` 图片，可选一张 `last_frame` 图片；不能只有尾帧，也不能混用普通参考素材。
+
+参考视频和音频各自合计最多 15 秒，单项至少 2 秒。实际媒体内容限制由上游校验。
+
+`options` 支持 `return_last_frame`（默认 `false`）、`watermark`（默认 `false`）和 `generate_audio`（默认 `true`）。不支持 `task_type` 和 `video_output_format`。
+
+可通过 `provider_tools: [{ "type": "web_search" }]` 配置工具，通过 `callback_url` 设置 HTTP(S) 回调地址。不支持 `optimize_prompt`、`video_generation_seed`、Base64 或 `asset://` 素材。
+
+参考素材使用 `input_references` 对象数组，每项包含 `type` 和 HTTP(S) `url`，`role` 默认 `reference`。首尾帧仅用于图片。示例素材地址为占位符，调用前请替换。未知字段会被拒绝。
+
+## 查询与下载
+
+提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)，完成后[下载视频](/api-reference/videos/content)。
+
+成功时返回 `url`；路径相对于 API 服务地址，下载需携带提交时的同一 API 密钥。成功且有尾帧时额外返回可选的 `url_last_frame`，认证方式相同。
+
+响应字段及示例按生成中、成功、错误区分。`completed_at` 和下载字段仅在成功分支展示；成功时 `completed_at` 必填。错误原因在 `error.message` 中，没有错误原因时 `error` 为 `null`。`unknown` 表示暂时无法确定状态，可以继续查询。
+
+渠道支持的全部模型见 [TYY 渠道](/channels/tyy)。

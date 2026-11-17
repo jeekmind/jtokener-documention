@@ -1,0 +1,20 @@
+---
+title: "ME 渠道"
+description: "查看 ME 渠道支持的模型和调用入口。"
+---
+
+通过技元 API 密钥调用以下模型。每个模型的参数、素材限制和示例见对应调用文档。
+
+| 模型文档 | 调用名 |
+| --- | --- |
+| [ME MiniMax H3](/api-reference/me/minimax-h3) | `me-MiniMax-H3` |
+
+## 调用流程
+
+1. 使用 `POST /v1/videos` 提交 JSON 任务。
+2. 保存返回的 `id`，通过 `GET /v1/videos/{id}` 查询。
+3. 任务成功后，通过 `GET /v1/videos/{id}/content` 下载视频。
+
+接口基础地址为 `https://tokener.jeekmind.com`。查询和下载均使用提交时的同一 API 密钥。密钥获取方式见[快速入门](/user-guide/start/quickstart)。
+
+成功响应的 `url` 是相对路径，需要拼接 API 服务地址。该渠道只提供主视频产物。

@@ -13,7 +13,7 @@
   "info": {
     "title": "通用视频接口",
     "version": "0.1.0",
-    "description": "Schema 导出预览，仅描述正常响应，错误响应暂未建模。"
+    "description": "通用视频任务查询与下载接口，响应字段按任务状态区分。"
   },
   "components": {
     "securitySchemes": {
@@ -152,13 +152,13 @@
             "type": "string",
             "format": "uri-reference",
             "pattern": "^/v1/videos/[^/]+/content$",
-            "description": "GXC：成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+            "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
           },
           "url_last_frame": {
             "type": "string",
             "format": "uri-reference",
             "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
-            "description": "GXC：成功且有尾帧时返回的下载路径，不含 BaseURL，格式为 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 New API Key 认证"
+            "description": "GXC、TYY 成功且有尾帧时返回的相对下载路径 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 API 密钥认证；HC、MYU、ME 不返回此字段。"
           }
         },
         "additionalProperties": true,
@@ -221,7 +221,7 @@
               "object",
               "null"
             ],
-            "description": "GXC：始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
             "required": [
               "message"
             ],
@@ -292,7 +292,7 @@
               "object",
               "null"
             ],
-            "description": "GXC：始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
             "required": [
               "message"
             ],

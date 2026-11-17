@@ -1,0 +1,716 @@
+{
+  "openapi": "3.1.0",
+  "servers": [
+    {
+      "url": "https://tokener.jeekmind.com"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "info": {
+    "title": "MYU 通义万相 3.0 Prime",
+    "version": "1.0.0",
+    "description": "JSON 异步视频生成接口。响应字段按任务状态区分。"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "技元 API 密钥"
+      }
+    },
+    "schemas": {
+      "VideoTaskGenerating": {
+        "title": "生成中",
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "model",
+          "status",
+          "progress",
+          "created_at",
+          "error"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "网关公开任务 ID，用于后续查询和下载"
+          },
+          "object": {
+            "const": "video",
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "客户端请求的模型名称"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "in_progress"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "任务创建时间，Unix 秒级时间戳"
+          },
+          "error": {
+            "type": "null",
+            "description": "无错误时返回 null"
+          }
+        },
+        "additionalProperties": true,
+        "examples": [
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "myu-wan3.0-video-prime",
+            "status": "in_progress",
+            "progress": 0,
+            "created_at": 1793851200,
+            "error": null
+          }
+        ]
+      },
+      "VideoTaskCompleted": {
+        "title": "成功",
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "model",
+          "status",
+          "progress",
+          "created_at",
+          "error",
+          "completed_at",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "网关公开任务 ID，用于后续查询和下载"
+          },
+          "object": {
+            "const": "video",
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "客户端请求的模型名称"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "任务创建时间，Unix 秒级时间戳"
+          },
+          "completed_at": {
+            "type": "integer",
+            "description": "完成时间，Unix 秒级时间戳"
+          },
+          "error": {
+            "type": "null",
+            "description": "成功时固定为 null"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri-reference",
+            "pattern": "^/v1/videos/[^/]+/content$",
+            "description": "成功时返回的网关主视频下载路径 /v1/videos/{id}/content，不含 BaseURL；使用公开任务 ID，需 New API Key 认证"
+          }
+        },
+        "additionalProperties": true,
+        "examples": [
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "myu-wan3.0-video-prime",
+            "status": "completed",
+            "progress": 100,
+            "created_at": 1793851200,
+            "error": null,
+            "completed_at": 1793851260,
+            "url": "/v1/videos/video_example/content"
+          }
+        ]
+      },
+      "VideoTaskFailed": {
+        "title": "错误",
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "model",
+          "status",
+          "progress",
+          "created_at",
+          "error"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "网关公开任务 ID，用于后续查询和下载"
+          },
+          "object": {
+            "const": "video",
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "客户端请求的模型名称"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "failed"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "任务创建时间，Unix 秒级时间戳"
+          },
+          "error": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "任务失败原因"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": true,
+        "examples": [
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "myu-wan3.0-video-prime",
+            "status": "failed",
+            "progress": 0,
+            "created_at": 1793851200,
+            "error": {
+              "message": "视频生成失败，请检查输入素材后重试"
+            }
+          }
+        ]
+      },
+      "VideoTaskUnknown": {
+        "title": "状态未知",
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "model",
+          "status",
+          "progress",
+          "created_at",
+          "error"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "网关公开任务 ID，用于后续查询和下载"
+          },
+          "object": {
+            "const": "video",
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "客户端请求的模型名称"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unknown"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "任务创建时间，Unix 秒级时间戳"
+          },
+          "error": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "任务失败原因"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": true,
+        "examples": [
+          {
+            "id": "video_example",
+            "object": "video",
+            "model": "myu-wan3.0-video-prime",
+            "status": "unknown",
+            "progress": 0,
+            "created_at": 1793851200,
+            "error": {
+              "message": "暂时无法确定任务状态，请稍后查询"
+            }
+          }
+        ]
+      },
+      "VideoTask": {
+        "title": "视频任务响应",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VideoTaskGenerating"
+          },
+          {
+            "$ref": "#/components/schemas/VideoTaskCompleted"
+          },
+          {
+            "$ref": "#/components/schemas/VideoTaskFailed"
+          },
+          {
+            "$ref": "#/components/schemas/VideoTaskUnknown"
+          }
+        ]
+      },
+      "VideoGenerationRequest": {
+        "title": "VideoGenerationRequest",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model"
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "模型调用名",
+            "minLength": 1,
+            "pattern": "\\S",
+            "const": "myu-wan3.0-video-prime"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "非空且不能仅包含空白字符的视频描述"
+          },
+          "seconds": {
+            "type": "integer",
+            "description": "输出时长，整数秒；2–30 或 -1（智能时长），映射上游 duration。插件默认 5 秒；智能时长预扣按 20 秒估算。",
+            "anyOf": [
+              {
+                "const": -1
+              },
+              {
+                "minimum": 2,
+                "maximum": 30
+              }
+            ],
+            "default": 5
+          },
+          "resolution": {
+            "type": "string",
+            "description": "输出分辨率；插件默认 720p。",
+            "enum": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4",
+              "media_adaptive"
+            ],
+            "description": "画面比例；media_adaptive 映射上游 adaptive。省略时由上游自适应。"
+          },
+          "input_references": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "image",
+                    "video",
+                    "audio"
+                  ],
+                  "description": "媒体类型"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https?://",
+                  "description": "生成期间持续可访问的 HTTP(S) URL"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "reference",
+                    "first_frame",
+                    "last_frame"
+                  ],
+                  "default": "reference",
+                  "description": "素材用途，首帧和尾帧仅适用于图片"
+                }
+              },
+              "if": {
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "video",
+                      "audio"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "role": {
+                    "const": "reference"
+                  }
+                }
+              }
+            },
+            "description": "统一映射上游 media：最多 10 张参考图、5 个参考视频、5 个参考音频；或首尾帧各 1 张，帧素材与参考素材互斥。视频、音频各自合计时长不超过 15 秒，需运行时或上游验证。空数组不传上游。",
+            "maxItems": 20,
+            "allOf": [
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "image"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 10
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "video"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 5
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "properties": {
+                    "type": {
+                      "const": "audio"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 5
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "role"
+                  ],
+                  "properties": {
+                    "role": {
+                      "const": "first_frame"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "role"
+                  ],
+                  "properties": {
+                    "role": {
+                      "const": "last_frame"
+                    }
+                  }
+                },
+                "minContains": 0,
+                "maxContains": 1
+              },
+              {
+                "if": {
+                  "contains": {
+                    "type": "object",
+                    "required": [
+                      "role"
+                    ],
+                    "properties": {
+                      "role": {
+                        "enum": [
+                          "first_frame",
+                          "last_frame"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "type",
+                      "role"
+                    ],
+                    "properties": {
+                      "type": {
+                        "const": "image"
+                      },
+                      "role": {
+                        "enum": [
+                          "first_frame",
+                          "last_frame"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "视频生成选项",
+            "properties": {
+              "watermark": {
+                "type": "boolean",
+                "description": "是否添加水印"
+              },
+              "video_generation_seed": {
+                "type": "integer",
+                "description": "映射上游 seed，范围 0–2147483647。",
+                "minimum": 0,
+                "maximum": 2147483647
+              }
+            }
+          }
+        },
+        "description": "Myu Wan 3.0 两个模型共用的用户输入；沿用公共输入字段和整数秒约定，不扩展小数时长。",
+        "anyOf": [
+          {
+            "required": [
+              "prompt"
+            ]
+          },
+          {
+            "required": [
+              "input_references"
+            ],
+            "properties": {
+              "input_references": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/v1/videos": {
+      "post": {
+        "tags": [
+          "MYU 视频"
+        ],
+        "operationId": "createMyuWan3Prime",
+        "summary": "MYU 通义万相 3.0 Prime 视频生成",
+        "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "text": {
+                  "summary": "文生视频",
+                  "value": {
+                    "model": "myu-wan3.0-video-prime",
+                    "prompt": "清晨湖面，一只纸船缓缓漂行",
+                    "seconds": 5,
+                    "resolution": "720p",
+                    "aspect_ratio": "16:9"
+                  }
+                },
+                "reference": {
+                  "summary": "参考图片生视频",
+                  "value": {
+                    "model": "myu-wan3.0-video-prime",
+                    "prompt": "清晨湖面，一只纸船缓缓漂行",
+                    "seconds": 5,
+                    "resolution": "720p",
+                    "aspect_ratio": "16:9",
+                    "input_references": [
+                      {
+                        "type": "image",
+                        "url": "https://example.com/reference.jpg",
+                        "role": "reference"
+                      }
+                    ]
+                  }
+                },
+                "frames": {
+                  "summary": "首尾帧生视频",
+                  "value": {
+                    "model": "myu-wan3.0-video-prime",
+                    "prompt": "清晨湖面，一只纸船缓缓漂行",
+                    "seconds": 5,
+                    "resolution": "720p",
+                    "aspect_ratio": "media_adaptive",
+                    "input_references": [
+                      {
+                        "type": "image",
+                        "url": "https://example.com/first.jpg",
+                        "role": "first_frame"
+                      },
+                      {
+                        "type": "image",
+                        "url": "https://example.com/last.jpg",
+                        "role": "last_frame"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoTask"
+                },
+                "examples": {
+                  "generating": {
+                    "summary": "生成中",
+                    "value": {
+                      "id": "video_example",
+                      "object": "video",
+                      "model": "myu-wan3.0-video-prime",
+                      "status": "in_progress",
+                      "progress": 0,
+                      "created_at": 1793851200,
+                      "error": null
+                    }
+                  },
+                  "completed": {
+                    "summary": "成功",
+                    "value": {
+                      "id": "video_example",
+                      "object": "video",
+                      "model": "myu-wan3.0-video-prime",
+                      "status": "completed",
+                      "progress": 100,
+                      "created_at": 1793851200,
+                      "error": null,
+                      "completed_at": 1793851260,
+                      "url": "/v1/videos/video_example/content"
+                    }
+                  },
+                  "failed": {
+                    "summary": "错误",
+                    "value": {
+                      "id": "video_example",
+                      "object": "video",
+                      "model": "myu-wan3.0-video-prime",
+                      "status": "failed",
+                      "progress": 0,
+                      "created_at": 1793851200,
+                      "error": {
+                        "message": "视频生成失败，请检查输入素材后重试"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

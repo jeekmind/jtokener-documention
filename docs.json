@@ -49,7 +49,10 @@
                 "group": "渠道介绍",
                 "pages": [
                   "api-reference/gxc/index",
-                  "channels/mu"
+                  "channels/tyy",
+                  "channels/hc",
+                  "channels/myu",
+                  "channels/me"
                 ]
               },
               {
@@ -57,13 +60,26 @@
                 "pages": [
                   "api-reference/gxc/seedance25",
                   "api-reference/gxc/seedance20",
-                  "api-reference/gxc/seedance20-fast"
+                  "api-reference/gxc/seedance20-fast",
+                  "api-reference/tyy/seedance25",
+                  "api-reference/tyy/seedance20",
+                  "api-reference/tyy/seedance20-fast",
+                  "api-reference/tyy/seedance20-mini"
                 ]
               },
               {
                 "group": "通义万相系列",
                 "pages": [
-                  "model-reference/mu-wan3"
+                  "api-reference/hc/wan3",
+                  "api-reference/hc/wan3-prime",
+                  "api-reference/myu/wan3",
+                  "api-reference/myu/wan3-prime"
+                ]
+              },
+              {
+                "group": "MiniMax 系列",
+                "pages": [
+                  "api-reference/me/minimax-h3"
                 ]
               }
             ]

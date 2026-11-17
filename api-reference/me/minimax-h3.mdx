@@ -1,0 +1,26 @@
+---
+title: "ME MiniMax H3"
+openapi: "api-reference/me/minimax-h3.openapi.json POST /v1/videos"
+---
+
+## 参数与素材规则
+
+`prompt` 必填且不能仅包含空白字符，最长 7000 字符。`seconds` 必填，支持整数 4–30；使用 `2K` 分辨率时最长 15 秒。分辨率支持 `480p`、`768p`、`1080p`、`2K`，省略时补为 `768p`。
+
+纯文本生成必须显式指定固定的 `aspect_ratio`。有普通参考素材时可省略比例，默认 `media_adaptive`；首尾帧模式只能省略比例或使用 `media_adaptive`。
+
+图片合计最多 9 张，包含首尾帧；视频、音频各最多 3 个。首帧、尾帧各最多 1 张，不能与普通参考素材混用。参考音频必须搭配参考图片或参考视频。
+
+不接受 `options`，素材只支持 HTTP(S) URL。当前插件识别生成中与成功状态；无法识别的上游响应可能显示为 `unknown`。
+
+参考素材使用 `input_references` 对象数组，每项包含 `type` 和 HTTP(S) `url`，`role` 默认 `reference`。首尾帧仅用于图片。示例素材地址为占位符，调用前请替换。未知字段会被拒绝。
+
+## 查询与下载
+
+提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)，完成后[下载视频](/api-reference/videos/content)。
+
+成功时返回 `url`；路径相对于 API 服务地址，下载需携带提交时的同一 API 密钥。此渠道仅提供主视频，不返回 `url_last_frame`。
+
+响应字段及示例按生成中、成功、错误区分。`completed_at` 和下载字段仅在成功分支展示；成功时 `completed_at` 必填。错误原因在 `error.message` 中，没有错误原因时 `error` 为 `null`。`unknown` 表示暂时无法确定状态，可以继续查询。
+
+渠道支持的全部模型见 [ME 渠道](/channels/me)。

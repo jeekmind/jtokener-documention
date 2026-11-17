@@ -70,7 +70,7 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
 
 ### 返回字段
 
-以下按 GXC 任务状态列出字段。
+以下按视频任务状态列出字段，适用于 GXC、TYY、HC、MYU 和 ME 渠道。
 
 <Tabs>
   <Tab title="生成中">
@@ -99,7 +99,7 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
 | `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
 | `error` | null | 固定为 `null` |
 | `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
-| `url_last_frame` | string | 可选，有尾帧时返回；认证方式同视频下载 |
+| `url_last_frame` | string | 可选，仅 GXC、TYY 成功且有尾帧时返回；认证方式同视频下载 |
 
   </Tab>
   <Tab title="错误">
