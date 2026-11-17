@@ -40,7 +40,7 @@
               {
                 "group": "通用接口与教程",
                 "pages": [
-                  "api-reference/generation",
+                  "api-reference/generation-guide",
                   "api-reference/videos/create",
                   "api-reference/videos/retrieve",
                   "api-reference/videos/content",
