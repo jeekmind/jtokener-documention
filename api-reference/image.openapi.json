@@ -1,0 +1,650 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "通用图片接口",
+        "version": "0.1.0",
+        "description": "使用 OpenAI Images API 字段格式生成和编辑图片。可用字段和取值取决于所选模型。"
+    },
+    "servers": [
+        {
+            "url": "https://tokener.jeekmind.com"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "paths": {
+        "/v1/images/edits": {
+            "post": {
+                "operationId": "createImageEdit",
+                "tags": [
+                    "Images"
+                ],
+                "summary": "编辑图片",
+                "description": "通过图片 URL 和编辑提示词生成编辑后的图片。",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EditImageBodyJsonParam"
+                            },
+                            "example": {
+                                "images": [
+                                    {
+                                        "image_url": "https://example.com/source.png"
+                                    }
+                                ],
+                                "model": "YOUR_IMAGE_MODEL",
+                                "prompt": "将背景改为清晨的湖面，保留主体外观",
+                                "size": "1024x1024"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImagesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid image request, including invalid parameters or input.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The project does not have access to the requested model.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "The requested DALL-E image endpoint is unavailable because it has been retired.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/InferenceRateLimited"
+                    },
+                    "500": {
+                        "description": "The image could not be generated or processed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "$ref": "#/components/responses/InferenceServiceUnavailable"
+                    }
+                }
+            }
+        },
+        "/v1/images/generations": {
+            "post": {
+                "operationId": "createImage",
+                "tags": [
+                    "Images"
+                ],
+                "summary": "生成图片",
+                "description": "通过文本提示词生成图片。",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateImageRequest"
+                            },
+                            "example": {
+                                "model": "YOUR_IMAGE_MODEL",
+                                "prompt": "清晨湖边的一座木屋，水彩画风格",
+                                "size": "1024x1024"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImagesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid image request, including invalid parameters or input.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The project does not have access to the requested model.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "410": {
+                        "description": "The requested DALL-E image endpoint is unavailable because it has been retired.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/InferenceRateLimited"
+                    },
+                    "500": {
+                        "description": "The image could not be generated or processed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "$ref": "#/components/responses/InferenceServiceUnavailable"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "技元 API 密钥"
+            }
+        },
+        "schemas": {
+            "EditImageBodyJsonParam": {
+                "type": "object",
+                "required": [
+                    "images",
+                    "prompt",
+                    "model"
+                ],
+                "properties": {
+                    "images": {
+                        "type": "array",
+                        "description": "待编辑的图片 URL 列表，每项通过 image_url 指定图片地址。",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "image_url"
+                            ],
+                            "properties": {
+                                "image_url": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "description": "可访问的 HTTP(S) 图片 URL。",
+                                    "example": "https://example.com/source.png"
+                                }
+                            }
+                        }
+                    },
+                    "prompt": {
+                        "type": "string",
+                        "description": "图片编辑要求。",
+                        "minLength": 1
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "图片模型调用名，请从 /v1/models 获取。",
+                        "example": "YOUR_IMAGE_MODEL"
+                    },
+                    "size": {
+                        "type": "string",
+                        "description": "以下模型支持使用 WIDTHxHEIGHT 字符串指定自定义分辨率，例如 1536x864：gpt-image-2、gpt-image-2-2026-04-21、gpt-image-2.5-sunburst、gpt-image-2.5-sunburst-2026-09-08、gpt-image-2.5-flare、gpt-image-2.5-flare-2026-09-08。宽度和高度都必须能被 16 整除，宽高比必须在 1:3 至 3:1 之间。超过 2560x1440 的分辨率为实验性支持，最大支持分辨率为 3840x2160。请求尺寸还必须满足所选模型当前的总像素数及边长限制。GPT Image 模型支持标准尺寸 1024x1024、1536x1024 和 1024x1536；支持自动尺寸的模型还接受 auto。",
+                        "example": "1024x1024"
+                    }
+                }
+            },
+            "ImagesResponse": {
+                "type": "object",
+                "title": "Image generation response",
+                "description": "The response from the image generation endpoint.",
+                "properties": {
+                    "safety_identifier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "The effective safety identifier used for safety monitoring and abuse detection. This is the non-empty `safety_identifier` from the request, or the deprecated `user` value when `safety_identifier` is omitted, null, or empty."
+                    },
+                    "created": {
+                        "type": "integer",
+                        "format": "unixtime",
+                        "description": "The Unix timestamp (in seconds) of when the image was created."
+                    },
+                    "data": {
+                        "type": "array",
+                        "description": "The list of generated images.",
+                        "items": {
+                            "$ref": "#/components/schemas/Image"
+                        }
+                    },
+                    "background": {
+                        "type": "string",
+                        "description": "The background parameter used for the image generation. Either `transparent` or `opaque`.",
+                        "enum": [
+                            "transparent",
+                            "opaque"
+                        ]
+                    },
+                    "output_format": {
+                        "$ref": "#/components/schemas/ImagesApiOutputFormat",
+                        "description": "The output format of the generated or edited image."
+                    },
+                    "size": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "1024x1024",
+                                    "1024x1536",
+                                    "1536x1024"
+                                ]
+                            }
+                        ],
+                        "description": "The image dimensions as a `WIDTHxHEIGHT` string, for example `1536x864`."
+                    },
+                    "quality": {
+                        "type": "string",
+                        "description": "The quality of the image generated. One of `low`, `medium`, `high`, `xhigh`, or `max`.",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high",
+                            "xhigh",
+                            "max"
+                        ]
+                    },
+                    "usage": {
+                        "$ref": "#/components/schemas/ImageGenUsage"
+                    },
+                    "svg_usage": {
+                        "$ref": "#/components/schemas/SvgUsage",
+                        "description": "Token usage for SVG authoring, separate from image rendering usage."
+                    }
+                },
+                "required": [
+                    "created"
+                ],
+                "x-oaiMeta": {
+                    "name": "The image generation response",
+                    "group": "images",
+                    "example": "{\n  \"created\": 1713833628,\n  \"data\": [\n    {\n      \"b64_json\": \"...\"\n    }\n  ],\n  \"background\": \"transparent\",\n  \"output_format\": \"png\",\n  \"size\": \"1024x1024\",\n  \"quality\": \"high\",\n  \"usage\": {\n    \"total_tokens\": 100,\n    \"input_tokens\": 50,\n    \"output_tokens\": 50,\n    \"input_tokens_details\": {\n      \"text_tokens\": 10,\n      \"image_tokens\": 40\n    }\n  }\n}\n"
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/Error"
+                    }
+                },
+                "required": [
+                    "error"
+                ]
+            },
+            "CreateImageRequest": {
+                "type": "object",
+                "required": [
+                    "model",
+                    "prompt"
+                ],
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "description": "图片模型调用名，请从 /v1/models 获取。",
+                        "example": "YOUR_IMAGE_MODEL"
+                    },
+                    "prompt": {
+                        "type": "string",
+                        "description": "需要生成的图片描述。",
+                        "minLength": 1
+                    },
+                    "size": {
+                        "type": "string",
+                        "description": "以下模型支持使用 WIDTHxHEIGHT 字符串指定自定义分辨率，例如 1536x864：gpt-image-2、gpt-image-2-2026-04-21、gpt-image-2.5-sunburst、gpt-image-2.5-sunburst-2026-09-08、gpt-image-2.5-flare、gpt-image-2.5-flare-2026-09-08。宽度和高度都必须能被 16 整除，宽高比必须在 1:3 至 3:1 之间。超过 2560x1440 的分辨率为实验性支持，最大支持分辨率为 3840x2160。请求尺寸还必须满足所选模型当前的总像素数及边长限制。GPT Image 模型支持标准尺寸 1024x1024、1536x1024 和 1024x1536；支持自动尺寸的模型还接受 auto。",
+                        "example": "1024x1024"
+                    }
+                }
+            },
+            "ImagesApiOutputFormat": {
+                "type": "string",
+                "enum": [
+                    "png",
+                    "webp",
+                    "jpeg",
+                    "gif",
+                    "svg"
+                ]
+            },
+            "Image": {
+                "type": "object",
+                "description": "生成或编辑后的图片内容。",
+                "properties": {
+                    "b64_json": {
+                        "type": "string",
+                        "description": "Base64 编码的图片内容，解码后可保存为图片文件。"
+                    }
+                }
+            },
+            "ImageGenUsage": {
+                "properties": {
+                    "input_tokens": {
+                        "type": "integer",
+                        "description": "The number of tokens (images and text) in the input prompt."
+                    },
+                    "total_tokens": {
+                        "type": "integer",
+                        "description": "The total number of tokens (images and text) used for the image generation."
+                    },
+                    "output_tokens": {
+                        "type": "integer",
+                        "description": "The number of output tokens generated by the model."
+                    },
+                    "output_tokens_details": {
+                        "$ref": "#/components/schemas/ImageGenOutputTokensDetails"
+                    },
+                    "input_tokens_details": {
+                        "$ref": "#/components/schemas/ImageGenInputUsageDetails"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "input_tokens",
+                    "total_tokens",
+                    "output_tokens",
+                    "input_tokens_details"
+                ],
+                "title": "Image generation usage",
+                "description": "Token usage information for image generation with GPT Image models."
+            },
+            "SvgUsage": {
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    },
+                    "input_tokens": {
+                        "type": "integer"
+                    },
+                    "output_tokens": {
+                        "type": "integer"
+                    },
+                    "total_tokens": {
+                        "type": "integer"
+                    },
+                    "reasoning_tokens": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "model",
+                    "input_tokens",
+                    "output_tokens",
+                    "total_tokens",
+                    "reasoning_tokens"
+                ]
+            },
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "param": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "misalignment": {
+                        "$ref": "#/components/schemas/MisalignmentErrorDetailsResource"
+                    }
+                },
+                "required": [
+                    "type",
+                    "message",
+                    "param",
+                    "code"
+                ]
+            },
+            "ImageGenOutputTokensDetails": {
+                "properties": {
+                    "image_tokens": {
+                        "type": "integer",
+                        "description": "The number of image output tokens generated by the model."
+                    },
+                    "text_tokens": {
+                        "type": "integer",
+                        "description": "The number of text output tokens generated by the model."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "image_tokens",
+                    "text_tokens"
+                ],
+                "title": "Image generation output token details",
+                "description": "The output token details for the image generation."
+            },
+            "ImageGenInputUsageDetails": {
+                "properties": {
+                    "text_tokens": {
+                        "type": "integer",
+                        "description": "The number of text tokens in the input prompt."
+                    },
+                    "image_tokens": {
+                        "type": "integer",
+                        "description": "The number of image tokens in the input prompt."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "text_tokens",
+                    "image_tokens"
+                ],
+                "title": "Input usage details",
+                "description": "The input tokens detailed information for the image generation."
+            },
+            "MisalignmentErrorDetailsResource": {
+                "properties": {
+                    "review_target": {
+                        "anyOf": [
+                            {
+                                "not": {
+                                    "pattern": "[^A-Za-z0-9._~:-]"
+                                },
+                                "type": "string",
+                                "maxLength": 96,
+                                "minLength": 1,
+                                "pattern": "^[A-Za-z0-9._~:-]+$",
+                                "description": "An opaque target for explicitly continuing this review, or null when unavailable."
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "error_type": {
+                        "$ref": "#/components/schemas/_MisalignmentErrorType",
+                        "description": "An optional classification; clients must accept additional values."
+                    },
+                    "detailed_explanation": {
+                        "type": "string",
+                        "description": "The public explanation for this block."
+                    },
+                    "steer": {
+                        "$ref": "#/components/schemas/_MisalignmentSteer",
+                        "description": "An optional public continuation instruction."
+                    }
+                },
+                "type": "object",
+                "required": []
+            },
+            "_MisalignmentErrorType": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "string",
+                        "enum": [
+                            "potentially_unintended_data_transfer",
+                            "potentially_unintended_data_access",
+                            "potentially_unintended_destructive_activity",
+                            "other"
+                        ]
+                    }
+                ]
+            },
+            "_MisalignmentSteer": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "The public continuation instruction."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ]
+            }
+        },
+        "responses": {
+            "InferenceRateLimited": {
+                "description": "The request was rejected because a rate limit was exceeded. A slow_down error means traffic increased too quickly; reduce your request rate, then increase it gradually.",
+                "headers": {
+                    "Retry-After": {
+                        "description": "The minimum number of seconds to wait before retrying. This header is returned when the server has computed a retry delay and may be omitted.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                },
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        },
+                        "examples": {
+                            "slowDown": {
+                                "summary": "Traffic increased too quickly",
+                                "value": {
+                                    "error": {
+                                        "message": "Your request rate increased too quickly. Please reduce the request rate and gradually increase it again.",
+                                        "type": "rate_limit_error",
+                                        "param": null,
+                                        "code": "slow_down"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "InferenceServiceUnavailable": {
+                "description": "The service is temporarily unavailable. A server_is_overloaded error means the requested model is temporarily overloaded; retry after a brief delay.",
+                "headers": {
+                    "Retry-After": {
+                        "description": "The minimum number of seconds to wait before retrying. This header is returned when the server has computed a retry delay and may be omitted.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                },
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        },
+                        "examples": {
+                            "serverOverloaded": {
+                                "summary": "The requested model is temporarily overloaded",
+                                "value": {
+                                    "error": {
+                                        "message": "The model is temporarily overloaded. Please retry your request after a brief delay.",
+                                        "type": "service_unavailable_error",
+                                        "param": null,
+                                        "code": "server_is_overloaded"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAI 官方 OpenAPI 规范（字段来源）",
+        "url": "https://github.com/openai/openai-openapi"
+    }
+}

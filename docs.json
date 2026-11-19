@@ -27,6 +27,8 @@
                                 "group": "通用接口与教程",
                                 "pages": [
                                     "api-reference/generation-guide",
+                                    "api-reference/images/generations",
+                                    "api-reference/images/edits",
                                     "api-reference/videos/create",
                                     "api-reference/videos/retrieve",
                                     "api-reference/videos/content",
