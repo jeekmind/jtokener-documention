@@ -111,7 +111,7 @@
                     "Images"
                 ],
                 "summary": "生成图片",
-                "description": "通过文本提示词生成图片。",
+                "description": "通过文本提示词生成图片，可通过 images 提供参考图片。",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -122,6 +122,11 @@
                             "example": {
                                 "model": "YOUR_IMAGE_MODEL",
                                 "prompt": "清晨湖边的一座木屋，水彩画风格",
+                                "images": [
+                                    {
+                                        "image_url": "https://example.com/source.png"
+                                    }
+                                ],
                                 "size": "1024x1024"
                             }
                         }
@@ -348,6 +353,25 @@
                         "type": "string",
                         "description": "需要生成的图片描述。",
                         "minLength": 1
+                    },
+                    "images": {
+                        "type": "array",
+                        "description": "可选的参考图片 URL 列表，每项通过 image_url 指定图片地址。传入时至少提供一张图片，图片数量和格式限制取决于所选模型。",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "image_url"
+                            ],
+                            "properties": {
+                                "image_url": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "description": "可访问的 HTTP(S) 图片 URL。",
+                                    "example": "https://example.com/source.png"
+                                }
+                            }
+                        }
                     },
                     "size": {
                         "type": "string",

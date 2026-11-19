@@ -19,7 +19,11 @@ openapi: "api-reference/image.openapi.json POST /v1/images/generations"
 | --- | --- | --- | --- |
 | `model` | string | 是 | 图片模型调用名，从 `/v1/models` 获取 |
 | `prompt` | string | 是 | 需要生成的图片描述 |
+| `images` | object[] | 否 | 参考图片列表，传入时至少提供一张图片 |
+| `images[].image_url` | string | 是 | 可访问的 HTTP(S) 图片 URL；传入 `images` 时，每项必填 |
 | `size` | string | 否 | 输出图片尺寸，例如 `1024x1024`；支持的尺寸和默认值取决于所选模型 |
+
+`images` 与[编辑图片](/api-reference/images/edits)使用相同的 URL 引用结构，例如 `[{"image_url": "https://example.com/source.png"}]`。图片数量和格式限制取决于所选模型。不传入 `images` 时，仅根据提示词生成图片。
 
 ## 尺寸规则
 
@@ -40,6 +44,8 @@ GPT Image 模型支持标准尺寸 `1024x1024`、`1536x1024` 和 `1024x1536`。�
 
 将 `YOUR_IMAGE_MODEL` 替换为实际图片模型调用名。
 
+需要参考图片时，传入 `images` 并将图片 URL 替换为实际值；仅使用提示词生成时，省略 `images`。
+
 ```bash
 curl 'https://tokener.jeekmind.com/v1/images/generations' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
@@ -47,6 +53,7 @@ curl 'https://tokener.jeekmind.com/v1/images/generations' \
   -d '{
     "model": "YOUR_IMAGE_MODEL",
     "prompt": "清晨湖边的一座木屋，水彩画风格",
+    "images": [{"image_url": "https://example.com/source.png"}],
     "size": "1024x1024"
   }'
 ```
