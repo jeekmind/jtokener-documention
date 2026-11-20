@@ -1,0 +1,53 @@
+---
+title: "上传媒体文件"
+description: "上传单个图片、音频或视频文件，获取带有效期的签名下载链接。"
+openapi: "api-reference/tos-upload.openapi.yaml POST /tos-upload/files"
+---
+
+使用 `POST /tos-upload/files` 上传媒体文件。请求使用 `multipart/form-data`，仅包含一个名为 `file` 的非空文件字段。
+
+在 `Authorization` 请求头中传入 `Bearer YOUR_API_KEY`。你的[技元 API 密钥](/user-guide/start/quickstart)需要具备 `tos-upload` 模型及相应分组的访问权限。
+
+## 文件要求
+
+默认大小上限为图片 20 MiB、音频 50 MiB、视频 100 MiB。实际限制取决于管理员、网关及反向代理配置。
+
+文件名最长 255 个字符，必须带扩展名。文件名中不得包含路径分隔符或控制字符。文件字段的 MIME 类型必须与扩展名匹配，大小写不限。
+
+| 扩展名 | MIME 类型 |
+| --- | --- |
+| `jpg`、`jpeg` | `image/jpeg` |
+| `png` | `image/png` |
+| `webp` | `image/webp` |
+| `gif` | `image/gif` |
+| `mp3` | `audio/mpeg`、`audio/mp3` |
+| `wav` | `audio/wav`、`audio/x-wav`、`audio/wave` |
+| `aac` | `audio/aac` |
+| `m4a` | `audio/mp4`、`audio/x-m4a` |
+| `flac` | `audio/flac`、`audio/x-flac` |
+| `ogg` | `audio/ogg` |
+| `mp4` | `video/mp4` |
+| `mov` | `video/quicktime` |
+| `webm` | `video/webm` |
+
+## 请求示例
+
+将 `YOUR_API_KEY` 和 `./video.mp4` 替换为你的密钥和本地文件路径。上传其他格式时，同时替换 `type`。cURL 会自动生成 multipart boundary。
+
+```bash
+curl --fail-with-body 'https://tokener.jeekmind.com/tos-upload/files' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -F 'file=@./video.mp4;type=video/mp4'
+```
+
+## 使用下载链接
+
+上传成功后，接口以 HTTP `200` 同步返回文件信息。对响应中的 `url` 直接发起 `GET` 请求即可下载文件。请原样保留签名参数，并妥善保管链接。
+
+链接默认有效期为 30 天，以 `expires_at`（Unix 秒）为准。文件清理或权限变更可能使链接提前失效。
+
+## 处理上传错误
+
+收到 HTTP `400` 时，请查看错误消息并核对文件字段、类型、大小及网关配置。其他错误的响应格式取决于网关、代理或上游服务。
+
+如果请求超时或上传结果不确定，请保留可用的请求 ID，并联系管理员核查后再决定是否重试。

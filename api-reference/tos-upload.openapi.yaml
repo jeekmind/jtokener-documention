@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: TOS 文件上传 API
+  version: 0.1.0
+  description: |
+    上传单个图片、音频或视频文件，同步返回 TOS 私有对象的 GET 签名 URL。
+    调用方使用 New API Token，无需提供 TOS 密钥。
+
+    默认大小上限：图片 20 MiB、音频 50 MiB、视频 100 MiB。
+    管理员可调整大小上限；实际限制同时受网关及反向代理配置约束。
+    仅检查文件声明的扩展名、MIME 和大小，不检测实际编码或时长。
+
+    下载链接默认有效期为 30 天，以 expires_at 为准。
+    文件清理时间由管理员通过 TOS 控制台生命周期规则统一管理。
+    文件删除或权限变更可能导致链接提前失效。
+
+    不提供轮询、历史结果查询、续签或删除接口。
+    请求超时不代表上传失败；请先核查对象，避免重复上传。
+servers:
+  - url: https://tokener.jeekmind.com
+    description: New API 网关
+tags:
+  - name: Files
+    description: 媒体文件上传
+security:
+  - bearerAuth: []
+paths:
+  /tos-upload/files:
+    post:
+      tags: [Files]
+      operationId: uploadMediaFile
+      summary: 上传单个媒体文件
+      description: |
+        仅接受一个名为 file 的非空文件，不接受额外文本字段或多个文件。
+        不接受 JSON、Base64、远程 URL，也无需传 model 或 purpose。
+        Token 需具备 tos-upload 模型及相应分组的访问权限。
+
+        扩展名与文件部分的 MIME 必须匹配，不区分大小写：
+        - jpg、jpeg：image/jpeg
+        - png：image/png
+        - webp：image/webp
+        - gif：image/gif
+        - mp3：audio/mpeg 或 audio/mp3
+        - wav：audio/wav、audio/x-wav 或 audio/wave
+        - aac：audio/aac
+        - m4a：audio/mp4 或 audio/x-m4a
+        - flac：audio/flac 或 audio/x-flac
+        - ogg：audio/ogg
+        - mp4：video/mp4
+        - mov：video/quicktime
+        - webm：video/webm
+
+        不接受 application/octet-stream。文件名必须带扩展名，
+        最长 255 个字符，不得包含路径分隔符或控制字符。
+        multipart boundary 由客户端生成。
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 单个非空媒体文件；扩展名、MIME 和大小需符合接口约束。
+            encoding:
+              file:
+                contentType: 'image/jpeg, image/png, image/webp, image/gif, audio/mpeg, audio/mp3, audio/wav, audio/x-wav, audio/wave, audio/aac, audio/mp4, audio/x-m4a, audio/flac, audio/x-flac, audio/ogg, video/mp4, video/quicktime, video/webm'
+      responses:
+        '200':
+          description: 上传成功，直接返回文件信息，无外层 data 包装。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+              examples:
+                video:
+                  summary: 视频上传成功（签名 URL 为占位示例）
+                  value:
+                    url: 'https://examplebucket.tos-cn-beijing.volces.com/temp-uploads/2026-11-19/task_example.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Signature=example'
+                    media_type: video
+                    mime_type: video/mp4
+                    size: 1596
+                    key: temp-uploads/2026-11-19/task_example.mp4
+                    expires_at: 1797667094
+                    etag: '"example-etag"'
+        '400':
+          description: |
+            请求校验失败或网关拒绝请求。例如文件类型不支持、MIME 不匹配、
+            文件为空、超过渠道大小限制、存在额外字段或模型尚未配置价格。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadError'
+              examples:
+                unsupportedMedia:
+                  summary: 不支持的文件类型
+                  value:
+                    code: invalid_request
+                    message: '仅支持白名单内的图片、音频、视频，扩展名与 MIME 必须匹配 (request id: example-request-id)'
+                    data: null
+        default:
+          description: |
+            鉴权、权限、额度、限流、请求体大小、代理或上游异常。
+            HTTP 状态码、Content-Type 和错误结构取决于实际响应来源，
+            不保证与 400 的 JSON 包装一致。
+            请保留错误消息及 request ID。对于上传结果不确定的请求，
+            联系管理员核查后再决定是否重新提交；接口不支持客户端幂等键。
+      x-default-max-file-bytes:
+        image: 20971520
+        audio: 52428800
+        video: 104857600
+      x-codeSamples:
+        - lang: Shell
+          label: cURL 上传视频
+          source: |
+            curl --fail-with-body \
+              'https://tokener.jeekmind.com/tos-upload/files' \
+              -H "Authorization: Bearer $NEW_API_TOKEN" \
+              -F 'file=@./video.mp4;type=video/mp4'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: New API Token，需拥有 tos-upload 模型及对应分组的权限。
+  schemas:
+    UploadResponse:
+      type: object
+      required: [url, media_type, mime_type, size, key, expires_at, etag]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: |
+            完整 GET 签名下载 URL，无需发送网关 Token。
+            请保留原始签名参数，不保证 HEAD 请求可用。
+            签名 URL 可直接访问文件，请避免写入公开日志。
+        media_type:
+          type: string
+          enum: [image, audio, video]
+          description: 文件类别。
+        mime_type:
+          type: string
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+            - image/gif
+            - audio/mpeg
+            - audio/wav
+            - audio/aac
+            - audio/mp4
+            - audio/flac
+            - audio/ogg
+            - video/mp4
+            - video/quicktime
+            - video/webm
+          description: 规范化后的文件 MIME；例如 audio/x-wav 输入返回 audio/wav。
+        size:
+          type: integer
+          minimum: 1
+          description: 文件大小，单位为字节。
+        key:
+          type: string
+          minLength: 1
+          description: TOS 对象路径，含服务端配置的前缀，不含桶名；调用者不应自行推断该路径。
+        expires_at:
+          type: integer
+          minimum: 0
+          description: 签名 URL 的过期时间，Unix 秒；默认在签发后 2592000 秒过期。
+        etag:
+          type: string
+          minLength: 1
+          description: TOS 返回的 ETag，值可能包含双引号，不应当作 SHA256 校验值。
+    UploadError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: 网关错误代码。
+        message:
+          type: string
+          description: 错误描述，可能附带 request ID。
+        data:
+          type: 'null'
+          description: 已验证的请求校验错误中为 null。

@@ -29,6 +29,7 @@
                                     "api-reference/generation-guide",
                                     "api-reference/images/generations",
                                     "api-reference/images/edits",
+                                    "api-reference/files/upload",
                                     "api-reference/videos/create",
                                     "api-reference/videos/retrieve",
                                     "api-reference/videos/content",
