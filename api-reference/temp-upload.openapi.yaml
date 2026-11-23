@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: TOS 文件上传 API
+  title: 临时文件上传 API（Temp Upload）
   version: 0.1.0
   description: |
     上传单个图片、音频或视频文件，同步返回 TOS 私有对象的 GET 签名 URL。
@@ -25,7 +25,7 @@ tags:
 security:
   - bearerAuth: []
 paths:
-  /tos-upload/files:
+  /temp-upload/files:
     post:
       tags: [Files]
       operationId: uploadMediaFile
@@ -33,7 +33,7 @@ paths:
       description: |
         仅接受一个名为 file 的非空文件，不接受额外文本字段或多个文件。
         不接受 JSON、Base64、远程 URL，也无需传 model 或 purpose。
-        Token 需具备 tos-upload 模型及相应分组的访问权限。
+        Token 需具备 temp-upload 模型及相应分组的访问权限。
 
         扩展名与文件部分的 MIME 必须匹配，不区分大小写：
         - jpg、jpeg：image/jpeg
@@ -118,7 +118,7 @@ paths:
           label: cURL 上传视频
           source: |
             curl --fail-with-body \
-              'https://tokener.jeekmind.com/tos-upload/files' \
+              'https://tokener.jeekmind.com/temp-upload/files' \
               -H "Authorization: Bearer $NEW_API_TOKEN" \
               -F 'file=@./video.mp4;type=video/mp4'
 components:
@@ -126,7 +126,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: New API Token，需拥有 tos-upload 模型及对应分组的权限。
+      description: New API Token，需拥有 temp-upload 模型及对应分组的权限。
   schemas:
     UploadResponse:
       type: object

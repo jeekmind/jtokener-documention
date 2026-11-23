@@ -1,12 +1,12 @@
 ---
 title: "上传媒体文件"
 description: "上传单个图片、音频或视频文件，获取带有效期的签名下载链接。"
-openapi: "api-reference/tos-upload.openapi.yaml POST /tos-upload/files"
+openapi: "api-reference/temp-upload.openapi.yaml POST /temp-upload/files"
 ---
 
-使用 `POST /tos-upload/files` 上传媒体文件。请求使用 `multipart/form-data`，仅包含一个名为 `file` 的非空文件字段。
+使用 `POST /temp-upload/files` 上传媒体文件。请求使用 `multipart/form-data`，仅包含一个名为 `file` 的非空文件字段。
 
-在 `Authorization` 请求头中传入 `Bearer YOUR_API_KEY`。你的[技元 API 密钥](/user-guide/start/quickstart)需要具备 `tos-upload` 模型及相应分组的访问权限。
+在 `Authorization` 请求头中传入 `Bearer YOUR_API_KEY`。你的[技元 API 密钥](/user-guide/start/quickstart)需要具备 `temp-upload` 模型及相应分组的访问权限。
 
 ## 文件要求
 
@@ -35,7 +35,7 @@ openapi: "api-reference/tos-upload.openapi.yaml POST /tos-upload/files"
 将 `YOUR_API_KEY` 和 `./video.mp4` 替换为你的密钥和本地文件路径。上传其他格式时，同时替换 `type`。cURL 会自动生成 multipart boundary。
 
 ```bash
-curl --fail-with-body 'https://tokener.jeekmind.com/tos-upload/files' \
+curl --fail-with-body 'https://tokener.jeekmind.com/temp-upload/files' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -F 'file=@./video.mp4;type=video/mp4'
 ```
