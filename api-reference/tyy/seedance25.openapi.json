@@ -28,7 +28,7 @@
                     {
                         "id"        : "video_example",
                         "object"    : "video",
-                        "model"     : "tyy-cdance2.5-0807",
+                        "model"     : "tyy-seedance-2-5-260807",
                         "status"    : "in_progress",
                         "progress"  : 0,
                         "created_at": 1793851200,
@@ -73,7 +73,7 @@
                     {
                         "id"            : "video_example",
                         "object"        : "video",
-                        "model"         : "tyy-cdance2.5-0807",
+                        "model"         : "tyy-seedance-2-5-260807",
                         "status"        : "completed",
                         "progress"      : 100,
                         "created_at"    : 1793851200,
@@ -108,7 +108,7 @@
                     {
                         "id"        : "video_example",
                         "object"    : "video",
-                        "model"     : "tyy-cdance2.5-0807",
+                        "model"     : "tyy-seedance-2-5-260807",
                         "status"    : "failed",
                         "progress"  : 0,
                         "created_at": 1793851200,
@@ -140,7 +140,7 @@
                     {
                         "id"        : "video_example",
                         "object"    : "video",
-                        "model"     : "tyy-cdance2.5-0807",
+                        "model"     : "tyy-seedance-2-5-260807",
                         "status"    : "unknown",
                         "progress"  : 0,
                         "created_at": 1793851200,
@@ -168,7 +168,7 @@
                         "description": "模型调用名",
                         "minLength"  : 1,
                         "pattern"    : "\\S",
-                        "const"      : "tyy-cdance2.5-0807"
+                        "const"      : "tyy-seedance-2-5-260807"
                     },
                     "prompt"          : {
                         "type"       : "string",
@@ -493,7 +493,7 @@
                                 "text"     : {
                                     "summary": "文生视频",
                                     "value"  : {
-                                        "model"       : "tyy-cdance2.5-0807",
+                                        "model"       : "tyy-seedance-2-5-260807",
                                         "prompt"      : "清晨湖面，一只纸船缓缓漂行",
                                         "seconds"     : 5,
                                         "resolution"  : "720p",
@@ -503,7 +503,7 @@
                                 "reference": {
                                     "summary": "参考图片生视频",
                                     "value"  : {
-                                        "model"           : "tyy-cdance2.5-0807",
+                                        "model"           : "tyy-seedance-2-5-260807",
                                         "prompt"          : "清晨湖面，一只纸船缓缓漂行",
                                         "seconds"         : 5,
                                         "resolution"      : "720p",
@@ -520,7 +520,7 @@
                                 "frames"   : {
                                     "summary": "首尾帧生视频",
                                     "value"  : {
-                                        "model"           : "tyy-cdance2.5-0807",
+                                        "model"           : "tyy-seedance-2-5-260807",
                                         "prompt"          : "清晨湖面，一只纸船缓缓漂行",
                                         "seconds"         : 5,
                                         "resolution"      : "720p",
@@ -542,7 +542,7 @@
                                 "edit"     : {
                                     "summary": "编辑参考视频",
                                     "value"  : {
-                                        "model"           : "tyy-cdance2.5-0807",
+                                        "model"           : "tyy-seedance-2-5-260807",
                                         "prompt"          : "清晨湖面，一只纸船缓缓漂行",
                                         "seconds"         : -1,
                                         "resolution"      : "720p",
@@ -569,7 +569,7 @@
                                         "value"  : {
                                             "id"        : "video_example",
                                             "object"    : "video",
-                                            "model"     : "tyy-cdance2.5-0807",
+                                            "model"     : "tyy-seedance-2-5-260807",
                                             "status"    : "in_progress",
                                             "progress"  : 0,
                                             "created_at": 1793851200,
@@ -581,7 +581,7 @@
                                         "value"  : {
                                             "id"            : "video_example",
                                             "object"        : "video",
-                                            "model"         : "tyy-cdance2.5-0807",
+                                            "model"         : "tyy-seedance-2-5-260807",
                                             "status"        : "completed",
                                             "progress"      : 100,
                                             "created_at"    : 1793851200,
@@ -596,7 +596,7 @@
                                         "value"  : {
                                             "id"        : "video_example",
                                             "object"    : "video",
-                                            "model"     : "tyy-cdance2.5-0807",
+                                            "model"     : "tyy-seedance-2-5-260807",
                                             "status"    : "failed",
                                             "progress"  : 0,
                                             "created_at": 1793851200,
