@@ -1,0 +1,52 @@
+---
+title: "异步生成图片"
+description: "使用 OpenAI Images JSON 参数提交图片任务，通过聚合接口查询结果。"
+openapi: "api-reference/image-async.openapi.json POST /v1/images/generations/async"
+---
+
+使用 `POST /v1/images/generations/async` 提交图片生成任务。接口基础地址为 `https://tokener.jeekmind.com`。使用你的技元 API 密钥，并设置 `Content-Type: application/json`。
+
+请求字段沿用 OpenAI Images 的 JSON 格式。聚合接口要求提供 `model` 和 `prompt`，模型名需包含渠道前缀。当前 Bana 支持的模型、参数和组合限制见 [Bana GPT Image 2.6](/api-reference/bana/gpt-image-26)。
+
+## 生成与编辑
+
+| 操作 | 聚合地址 | 请求方式 |
+| --- | --- | --- |
+| 生成图片 | `POST /v1/images/generations/async` | 省略 `images` |
+| 编辑图片 | `POST /v1/images/generations/async` | 提供 `images`，详见[Bana 编辑示例](/api-reference/bana/gpt-image-26#编辑示例) |
+| 查询任务 | `GET /v1/images/tasks/{task_id}` | 使用提交响应中的 `task.task_id` |
+
+## 请求示例
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/images/generations/async' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "bana-gpt-image-2.6-flare",
+    "prompt": "白色背景的蓝色陶瓷杯产品图，柔和光线",
+    "size": "1024x1024",
+    "quality": "high",
+    "n": 1
+  }'
+```
+
+## 提交响应
+
+提交成功返回 HTTP `202`，表示任务已受理。保存 `task.task_id`，使用提交时的同一 API 密钥[查询图片任务](/api-reference/images/tasks)。
+
+```json
+{
+  "created": 1795046400,
+  "data": [],
+  "task": {
+    "task_id": "task_example",
+    "status": "submitted",
+    "error": null
+  }
+}
+```
+
+`created` 是 Unix 秒级创建时间；服务未提供时为 `null`。任务未成功时，`data` 为空数组。最终是否成功，以查询结果的 `task.status` 为准。
+
+HTTP 错误见[错误处理](/api-reference/errors)。如果提交超时或提示任务可能已受理，请先确认任务状态，避免重复提交和计费。

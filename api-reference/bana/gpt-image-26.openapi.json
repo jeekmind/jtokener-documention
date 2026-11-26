@@ -1,0 +1,390 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bana GPT Image 2.6",
+    "version": "0.1.0",
+    "description": "Bana GPT Image 2.6 Flare 和 Sunburst 的聚合异步调用。"
+  },
+  "servers": [
+    {
+      "url": "https://tokener.jeekmind.com"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/images/generations/async": {
+      "post": {
+        "operationId": "submitAsyncImage",
+        "summary": "提交异步图片生成或编辑任务",
+        "description": "生成时省略 images；编辑时提供 images。请求必须提供 model 和 prompt。返回 HTTP 202 表示已受理，请使用 task.task_id 查询最终结果。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsyncImageInput"
+              },
+              "examples": {
+                "generate": {
+                  "summary": "生成图片",
+                  "value": {
+                    "model": "bana-gpt-image-2.6-flare",
+                    "prompt": "白色背景的蓝色陶瓷杯产品图",
+                    "size": "1024x1024",
+                    "n": 1
+                  }
+                },
+                "edit": {
+                  "summary": "编辑图片",
+                  "value": {
+                    "model": "bana-gpt-image-2.6-sunburst",
+                    "prompt": "将背景改成浅灰色，保留杯子外观",
+                    "images": [
+                      {
+                        "image_url": "https://example.com/cup.png"
+                      }
+                    ],
+                    "quality": "auto",
+                    "n": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "任务已受理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncImageResponse"
+                },
+                "example": {
+                  "created": 1795046400,
+                  "data": [],
+                  "task": {
+                    "task_id": "task_example",
+                    "status": "submitted",
+                    "error": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/images/tasks/{task_id}": {
+      "get": {
+        "operationId": "retrieveAsyncImageTask",
+        "summary": "查询异步图片任务",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "description": "提交响应中的 task.task_id。请使用提交时的同一 API 密钥。",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "example": "task_example"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "当前任务状态；任务失败也通过 task.status 返回。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncImageResponse"
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "生成中",
+                    "value": {
+                      "created": 1795046400,
+                      "data": [],
+                      "task": {
+                        "task_id": "task_example",
+                        "status": "submitted",
+                        "error": null
+                      }
+                    }
+                  },
+                  "success": {
+                    "summary": "成功",
+                    "value": {
+                      "created": 1795046400,
+                      "data": [
+                        {
+                          "url": "https://example.com/generated.png"
+                        }
+                      ],
+                      "task": {
+                        "task_id": "task_example",
+                        "status": "success",
+                        "error": null
+                      }
+                    }
+                  },
+                  "failure": {
+                    "summary": "失败",
+                    "value": {
+                      "created": 1795046400,
+                      "data": [],
+                      "task": {
+                        "task_id": "task_example",
+                        "status": "failure",
+                        "error": {
+                          "message": "Image generation failed"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "你的技元 API 密钥"
+      }
+    },
+    "schemas": {
+      "AsyncImageInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "包含渠道前缀的图片模型调用名，例如 bana-gpt-image-2.6-flare；聚合接口必填。",
+            "example": "bana-gpt-image-2.6-flare",
+            "enum": [
+              "bana-gpt-image-2.6-flare",
+              "bana-gpt-image-2.6-sunburst"
+            ]
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32000,
+            "pattern": "\\S",
+            "description": "图片生成描述",
+            "example": "白色背景的蓝色陶瓷杯产品图"
+          },
+          "size": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^(?:auto|[1-9][0-9]*x[1-9][0-9]*)$",
+            "description": "输出尺寸，使用 auto 或 WIDTHxHEIGHT。实际可用分辨率由所选模型决定。",
+            "example": "1024x1024"
+          },
+          "n": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 10,
+            "description": "生成图片数量，省略或为 null 时按 1 张预估，成功后按实际图片数结算。"
+          },
+          "quality": {
+            "enum": [
+              "auto",
+              "low",
+              "medium",
+              "high",
+              null
+            ],
+            "description": "图片质量。编辑时省略或为 null 使用 auto。"
+          },
+          "images": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "description": "编辑时必填。提供该字段即执行编辑；仅生成时省略。",
+            "items": {
+              "$ref": "#/components/schemas/ImageReference"
+            }
+          }
+        }
+      },
+      "ImageReference": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "maxProperties": 1,
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 20971520,
+            "pattern": "^(?:https?://[^/\\s?#]+|data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/]+={0,2}$)"
+          },
+          "file_id": {
+            "type": "string",
+            "pattern": "^\\S+$"
+          }
+        },
+        "description": "image_url 和 file_id 恰好提供一个。image_url 支持 HTTP(S) URL 或 Base64 图片 data URL。file_id 必须能被所选渠道上游访问。"
+      },
+      "AsyncImageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "created",
+          "data",
+          "task"
+        ],
+        "properties": {
+          "created": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "任务创建时间，Unix 秒级时间戳；未提供时为 null。"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "url"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https?://[^/\\s?#]+"
+                }
+              }
+            }
+          },
+          "task": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "task_id",
+              "status",
+              "error"
+            ],
+            "properties": {
+              "task_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "网关任务 ID，使用此值查询任务。"
+              },
+              "status": {
+                "enum": [
+                  "not_start",
+                  "submitted",
+                  "queued",
+                  "in_progress",
+                  "success",
+                  "failure",
+                  "unknown"
+                ]
+              },
+              "error": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImageTaskError"
+                  }
+                ]
+              }
+            },
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "failure"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ImageTaskError"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "error": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "if": {
+          "properties": {
+            "task": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "success"
+                }
+              }
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "data": {
+              "type": "array",
+              "minItems": 1
+            }
+          }
+        },
+        "else": {
+          "properties": {
+            "data": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        }
+      },
+      "ImageTaskError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

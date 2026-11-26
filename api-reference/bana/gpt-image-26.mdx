@@ -1,0 +1,88 @@
+---
+title: "Bana GPT Image 2.6"
+description: "通过聚合接口异步调用 Bana GPT Image 2.6 Flare 和 Sunburst，生成或编辑图片。"
+openapi: "api-reference/bana/gpt-image-26.openapi.json POST /v1/images/generations/async"
+---
+
+Bana 支持异步图片生成和编辑。请求字段沿用 OpenAI Images JSON 格式，提交后通过任务 ID 查询图片 URL。
+
+## 模型与调用地址
+
+| 模型调用名 | 支持操作 |
+| --- | --- |
+| `bana-gpt-image-2.6-flare` | 生成、编辑 |
+| `bana-gpt-image-2.6-sunburst` | 生成、编辑 |
+
+接口基础地址为 `https://tokener.jeekmind.com`。使用你的技元 API 密钥，认证格式为 `Authorization: Bearer YOUR_API_KEY`。
+
+| 操作 | 聚合接口 |
+| --- | --- |
+| 生成图片 | `POST /v1/images/generations/async`，省略 `images` |
+| 编辑图片 | `POST /v1/images/generations/async`，提供 `images` |
+| 查询任务 | `GET /v1/images/tasks/{task_id}` |
+
+## 请求字段
+
+| 字段 | 类型 | 必填 | 取值与限制 |
+| --- | --- | --- | --- |
+| `model` | string | 是 | 使用上表中的完整模型调用名，保留 `bana-` 前缀 |
+| `prompt` | string | 是 | 非空白描述，最多 32000 个字符 |
+| `images` | object[] | 编辑时是 | 1 至 16 张参考图，生成时省略 |
+| `size` | string 或 null | 否 | `auto` 或 `WIDTHxHEIGHT`，例如 `1024x1024`；宽高为正整数，实际可用分辨率由模型决定 |
+| `n` | integer 或 null | 否 | 1 至 10，省略或为 `null` 时按 1 张预估 |
+| `quality` | string 或 null | 否 | `auto`、`low`、`medium`、`high`；编辑时省略或为 `null` 使用 `auto` |
+
+`images` 中的每项恰好提供一个 `image_url` 或 `file_id`。`image_url` 接受 HTTP(S) URL 或 Base64 图片 data URL。`file_id` 必须能被 Bana 上游访问。图片引用示例：`{"image_url": "https://example.com/cup.png"}`。
+
+图片编辑使用 JSON `images` 引用，不支持 multipart 文件上传。
+
+## 生成示例
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/images/generations/async' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "bana-gpt-image-2.6-flare",
+    "prompt": "白色背景的蓝色陶瓷杯产品图，柔和光线",
+    "size": "1024x1024",
+    "quality": "high",
+    "n": 1
+  }'
+```
+
+## 编辑示例
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/images/generations/async' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "bana-gpt-image-2.6-sunburst",
+    "prompt": "将背景改成浅灰色，保留杯子的外观和位置",
+    "images": [{"image_url": "https://example.com/cup.png"}],
+    "quality": "auto",
+    "n": 1
+  }'
+```
+
+## 查询结果
+
+生成和编辑均返回 HTTP `202`，使用响应中的 `task.task_id` 查询。提交时的 `data` 为空数组。
+
+```json
+{
+  "created": 1795046400,
+  "data": [],
+  "task": {"task_id": "task_example", "status": "submitted", "error": null}
+}
+```
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/images/tasks/task_example' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
+```
+
+成功时 `task.status` 为 `success`，图片地址位于 `data[].url`。失败时为 `failure`，原因位于 `task.error.message`。完整状态及响应示例见[查询图片任务](/api-reference/images/tasks)。
+
+图片链接有效期由提供方管理，请及时下载。提交时按 `n` 预估图片数量，成功后按实际返回图片数结算；价格以[模型广场](https://tokener.jeekmind.com/pricing)为准。HTTP 错误见[错误处理](/api-reference/errors)。

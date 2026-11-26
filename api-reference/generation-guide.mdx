@@ -15,6 +15,8 @@ description: "获取模型列表、提交生成任务、查询任务结果和本
 
 图片生成使用 OpenAI 兼容的 `/v1/images/*` 接口。请查看[生成图片](/api-reference/images/generations)和[编辑图片](/api-reference/images/edits)，使用图片接口的请求字段和结果结构。
 
+异步图片使用聚合接口 `POST /v1/images/generations/async`：省略 `images` 生成图片，提供 `images` 编辑图片。保存响应中的 `task.task_id`，通过 `GET /v1/images/tasks/{task_id}` 查询结果。详见[异步生成图片](/api-reference/images/generations-async)、[查询图片任务](/api-reference/images/tasks)和 [Bana GPT Image 2.6](/api-reference/bana/gpt-image-26)。
+
 调用时，请替换示例中的占位符：
 
 | 占位符 | 说明 |

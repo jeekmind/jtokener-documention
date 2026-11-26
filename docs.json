@@ -64,7 +64,15 @@
                                     "api-reference/myu/wan3-prime"
                                 ]
                             },
-                            { "group": "MiniMax 系列", "pages": ["api-reference/me/minimax-h3"] }
+                            { "group": "MiniMax 系列", "pages": ["api-reference/me/minimax-h3"] },
+                            {
+                                "group": "开发中文档",
+                                "pages": [
+                                    "api-reference/images/generations-async",
+                                    "api-reference/images/tasks",
+                                    "api-reference/bana/gpt-image-26"
+                                ]
+                            }
                         ]
                     }
                 ]

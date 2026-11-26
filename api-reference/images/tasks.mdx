@@ -1,0 +1,64 @@
+---
+title: "查询图片任务"
+description: "查询异步图片生成或编辑任务，获取状态、图片 URL 或失败原因。"
+openapi: "api-reference/image-async.openapi.json GET /v1/images/tasks/{task_id}"
+---
+
+使用 `GET /v1/images/tasks/{task_id}` 查询通过聚合接口提交的图片生成或编辑任务。接口基础地址为 `https://tokener.jeekmind.com`。
+
+将 `{task_id}` 替换为提交响应中的 `task.task_id`，并携带提交时的同一 API 密钥。
+
+```bash
+curl 'https://tokener.jeekmind.com/v1/images/tasks/task_example' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
+```
+
+## 任务状态
+
+| `task.status` | 含义 | 后续操作 |
+| --- | --- | --- |
+| `not_start` | 尚未开始 | 继续查询 |
+| `submitted` | 已提交 | 继续查询 |
+| `queued` | 排队中 | 继续查询 |
+| `in_progress` | 生成中 | 继续查询 |
+| `unknown` | 暂时无法确定状态 | 使用同一任务 ID 继续查询 |
+| `success` | 已成功 | 读取 `data[].url` |
+| `failure` | 已失败 | 读取 `task.error.message`，停止轮询 |
+
+你可以间隔数秒查询一次，在任务成功或失败后停止轮询。HTTP `200` 表示查询成功，任务结果仍需检查 `task.status`。
+
+## 成功响应
+
+```json
+{
+  "created": 1795046400,
+  "data": [
+    {"url": "https://example.com/generated.png"}
+  ],
+  "task": {
+    "task_id": "task_example",
+    "status": "success",
+    "error": null
+  }
+}
+```
+
+`created` 为任务创建时间，单位为 Unix 秒；未提供时为 `null`。Bana 成功时至少返回一张图片，每项包含 `url`。直接使用返回的图片地址下载，链接有效期由提供方管理，请及时保存。
+
+## 失败响应
+
+```json
+{
+  "created": 1795046400,
+  "data": [],
+  "task": {
+    "task_id": "task_example",
+    "status": "failure",
+    "error": {"message": "Image generation failed"}
+  }
+}
+```
+
+未成功时，`data` 为空数组。只有 `failure` 状态返回错误对象，其他状态的 `task.error` 为 `null`。
+
+查询不存在或已过期的聚合任务可能返回 HTTP `404`。HTTP 错误见[错误处理](/api-reference/errors)。
