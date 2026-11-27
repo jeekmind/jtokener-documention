@@ -146,36 +146,7 @@ quota = 285714
 保留两位小数显示：¥4.00
 ```
 
-下面的 JavaScript 示例动态读取配置，并将额度格式化为人民币金额。示例统一保留两位小数；控制台可能根据金额大小使用不同的显示精度。
-
-```javascript
-const statusResponse = await fetch('https://tokener.jeekmind.com/api/status');
-const statusBody = await statusResponse.json();
-if (!statusResponse.ok || !statusBody.success) {
-  throw new Error(statusBody.message || `HTTP ${statusResponse.status}`);
-}
-
-const config = statusBody.data;
-if (
-  config.quota_display_type !== 'CNY' ||
-  !Number.isFinite(config.quota_per_unit) || config.quota_per_unit <= 0 ||
-  !Number.isFinite(config.usd_exchange_rate) || config.usd_exchange_rate <= 0
-) {
-  throw new Error('请检查站点显示币种及额度换算配置');
-}
-
-function formatQuotaCNY(quota) {
-  const amount = quota / config.quota_per_unit * config.usd_exchange_rate;
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'CNY',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-console.log(formatQuotaCNY(285714)); // ¥4.00（按上述配置）
-```
+上面的金额示例统一保留两位小数。控制台可能根据金额大小使用不同的显示精度。
 
 `quota_per_unit` 和显示汇率可能由管理员调整，请以 `/api/status` 的当前配置为准。`usd_exchange_rate` 是站点配置的显示汇率。若 `quota_display_type` 为 `USD`，显示金额直接使用 `quota / quota_per_unit`，无需再乘人民币汇率。
 
@@ -201,23 +172,6 @@ console.log(formatQuotaCNY(285714)); // ¥4.00（按上述配置）
 ```
 
 `usage_facts.output_video_duration` 在此示例中为输出视频时长，单位秒。`other` 还可能包含计费表达式 `expr_b64`、日志展示参数 `content_parts`，或错误代码和 HTTP 状态码。不要假设每条日志都包含这些属性。
-
-```javascript
-const body = await response.json();
-if (!response.ok || !body.success) {
-  throw new Error(body.message || `HTTP ${response.status}`);
-}
-
-for (const log of body.data.items) {
-  let other = {};
-  try {
-    other = JSON.parse(log.other || '{}') ?? {};
-  } catch {
-    // 保留原日志，兼容未按 JSON 格式保存的历史扩展信息。
-  }
-  console.log(log.request_id, other.task_id, other.usage_facts);
-}
-```
 
 ## 处理认证失败
 
