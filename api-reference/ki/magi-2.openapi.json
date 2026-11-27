@@ -185,8 +185,17 @@
                         "additionalProperties": false,
                         "default"             : {},
                         "properties"          : {
-                            "generate_audio"       : {"type": "boolean", "default": true},
-                            "video_generation_seed": {"type": "integer", "minimum": 0, "maximum": 2147483647}
+                            "generate_audio"       : {
+                                "type"       : "boolean",
+                                "default"    : true,
+                                "description": "是否生成声音，默认 true；设为 false 关闭声音，价格不变。"
+                            },
+                            "video_generation_seed": {
+                                "type"       : "integer",
+                                "minimum"    : 0,
+                                "maximum"    : 2147483647,
+                                "description": "视频生成的随机种子，支持 0–2147483647；省略时由上游随机选择。"
+                            }
                         }
                     },
                     "aspect_ratio"    : {
