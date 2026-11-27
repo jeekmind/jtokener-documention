@@ -1,0 +1,20 @@
+---
+title: "Ki 渠道"
+description: "查看 Ki 渠道支持的 Magi-2 模型和调用入口。"
+---
+
+通过技元 API 密钥调用以下模型。参数、素材限制和示例见对应调用文档。
+
+| 模型文档 | 调用名 |
+| --- | --- |
+| [Ki Magi-2](/api-reference/ki/magi-2) | `ki-magi-2` |
+
+## 调用流程
+
+1. 使用 `POST /v1/videos` 提交 JSON 任务。
+2. 保存返回的 `id`，通过 `GET /v1/videos/{id}` 查询。
+3. 当 `status` 为 `completed` 时，使用查询结果中的 `url_path` 下载视频。先拼接 API 服务地址，再携带提交时的同一 API 密钥请求。
+
+接口基础地址为 `https://tokener.jeekmind.com`。密钥获取方式见[快速入门](/user-guide/start/quickstart)。
+
+同一个模型支持文生视频、首尾帧和参考媒体三种模式，根据 `input_references` 自动选择。只提供主视频产物。成功响应使用 `url_path` 返回下载路径。

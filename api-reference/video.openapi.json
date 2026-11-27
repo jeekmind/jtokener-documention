@@ -2,11 +2,7 @@
     "openapi"   : "3.1.0",
     "servers"   : [ {"url": "https://tokener.jeekmind.com"} ],
     "security"  : [ {"bearerAuth": []} ],
-    "info"      : {
-        "title"      : "通用视频接口",
-        "version"    : "0.1.0",
-        "description": "通用视频任务查询与下载接口，响应字段按任务状态区分。"
-    },
+    "info"      : {"title": "通用视频接口", "version": "0.1.0", "description": "通用视频任务查询与下载接口，响应字段按任务状态区分。"},
     "components": {
         "securitySchemes": { "bearerAuth": {"type": "http", "scheme": "bearer", "description": "技元 API 密钥"} },
         "schemas"        : {
@@ -57,10 +53,7 @@
                     "object"        : {"const": "video", "type": "string"},
                     "model"         : {"type": "string", "description": "客户端请求的模型名称"},
                     "status"        : { "type": "string", "enum": ["completed"] },
-                    "progress"      : {
-                        "type"       : "integer",
-                        "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-                    },
+                    "progress"      : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
                     "created_at"    : {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "completed_at"  : {"type": "integer", "description": "完成时间，Unix 秒级时间戳。"},
                     "error"         : {"type": "null", "description": "无错误时返回 null。"},
@@ -68,13 +61,19 @@
                         "type": "string",
                         "format": "uri-reference",
                         "pattern": "^/v1/videos/[^/]+/content$",
-                        "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+                        "description": "GXC、TYY、HC、MYU、ME 成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+                    },
+                    "url_path"      : {
+                        "type"       : "string",
+                        "format"     : "uri-reference",
+                        "pattern"    : "^/v1/videos/[^/]+/content$",
+                        "description": "Ki 渠道成功时返回的主视频下载相对路径，需拼接 API 服务地址并携带同一 API 密钥。"
                     },
                     "url_last_frame": {
                         "type": "string",
                         "format": "uri-reference",
                         "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
-                        "description": "GXC、TYY 成功且有尾帧时返回的相对下载路径 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 API 密钥认证；HC、MYU、ME 不返回此字段。"
+                        "description": "GXC、TYY 成功且有尾帧时返回的相对下载路径 /v1/tasks/{id}/artifacts/last_frame/content，需使用同一 API 密钥认证；HC、MYU、ME、Ki 不返回此字段。"
                     }
                 },
                 "additionalProperties": true,
@@ -106,10 +105,10 @@
                     "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
                     "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "error"     : {
-                        "type": ["object", "null"],
+                        "type"       : ["object", "null"],
                         "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-                        "required": ["message"],
-                        "properties": { "message": {"type": "string", "description": "任务失败原因"} }
+                        "required"   : ["message"],
+                        "properties" : { "message": {"type": "string", "description": "任务失败原因"} }
                     }
                 },
                 "additionalProperties": true,
@@ -138,49 +137,49 @@
                     "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
                     "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "error"     : {
-                        "type": ["object", "null"],
+                        "type"       : ["object", "null"],
                         "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-                        "required": ["message"],
-                        "properties": { "message": {"type": "string", "description": "任务失败原因"} }
+                        "required"   : ["message"],
+                        "properties" : { "message": {"type": "string", "description": "任务失败原因"} }
                     }
                 },
                 "additionalProperties": true
             },
             "VideoGenerationRequest": {
-                "title": "视频生成提交参数",
-                "type": "object",
+                "title"               : "视频生成提交参数",
+                "type"                : "object",
                 "additionalProperties": false,
-                "required": ["model"],
-                "properties": {
+                "required"            : ["model"],
+                "properties"          : {
                     "model"           : {
-                        "type": "string",
+                        "type"       : "string",
                         "description": "必填。模型完整调用名，包含渠道前缀，例如 gxc-doubao-seedance-2-5-260628；详见对应模型文档。",
-                        "minLength": 1,
-                        "pattern": "\\S"
+                        "minLength"  : 1,
+                        "pattern"    : "\\S"
                     },
                     "prompt"          : {
-                        "type": "string",
-                        "minLength": 1,
-                        "pattern": "\\S",
+                        "type"       : "string",
+                        "minLength"  : 1,
+                        "pattern"    : "\\S",
                         "description": "视频描述，不得为空或仅包含空白字符。部分模型必填，其他模型允许提供参考素材后省略；长度限制见模型文档。"
                     },
                     "seconds"         : {
-                        "type": "integer",
+                        "type"       : "integer",
                         "description": "整数秒。当前模型支持的时长范围及默认值不同；部分模型支持 -1 智能时长。是否必填及素材、分辨率关联限制见模型文档。"
                     },
                     "resolution"      : {
-                        "type": "string",
+                        "type"       : "string",
                         "description": "输出分辨率。当前取值集合为 480p、720p、768p、1080p、2K、4K，区分大小写；每个模型仅支持其中一部分，默认值见模型文档。"
                     },
                     "aspect_ratio"    : {
-                        "type": "string",
-                        "enum": ["16:9", "9:16", "1:1", "21:9", "4:3", "3:4", "media_adaptive"],
+                        "type"       : "string",
+                        "enum"       : ["16:9", "9:16", "1:1", "21:9", "4:3", "3:4", "media_adaptive"],
                         "description": "画面比例；media_adaptive 表示根据素材自适应。支持范围、默认值和首尾帧或纯文本场景的限制见模型文档。"
                     },
                     "provider_tools"  : {
-                        "type": "array",
+                        "type"       : "array",
                         "description": "可选的提供方工具配置，当前仅部分模型支持；工具类型为 web_search。不能使用旧字段 tools。",
-                        "items": {
+                        "items"      : {
                             "type"                : "object",
                             "additionalProperties": false,
                             "required"            : ["type"],
@@ -190,14 +189,14 @@
                         }
                     },
                     "callback_url"    : {
-                        "type": "string",
-                        "format": "uri",
-                        "pattern": "^https?://[^\\s/?#]+(?:[/?#]\\S*)?$",
+                        "type"       : "string",
+                        "format"     : "uri",
+                        "pattern"    : "^https?://[^\\s/?#]+(?:[/?#]\\S*)?$",
                         "description": "可选 HTTP(S) 回调地址，由提供方发送任务通知；仅部分模型支持，回调行为以对应模型及提供方协议为准。"
                     },
                     "input_references": {
-                        "type": "array",
-                        "items": {
+                        "type"       : "array",
+                        "items"      : {
                             "type": "object",
                             "additionalProperties": false,
                             "required": ["type", "url"],
@@ -253,22 +252,22 @@
                             "generate_audio"       : {"type": "boolean", "description": "是否生成音频"},
                             "optimize_prompt"      : {"type": "boolean", "description": "是否优化提示词"},
                             "video_generation_seed": {
-                                "type": "integer",
+                                "type"       : "integer",
                                 "description": "整数随机种子，用于复现生成结果；部分模型支持 -1 随机种子，其他模型仅支持非负种子，范围见模型文档。"
                             }
                         }
                     }
                 },
-                "description": "所有当前渠道共用的请求字段集合。字段是否支持、必填条件、枚举、范围及默认值由具体模型限定；此集合不表示任意字段组合均可提交。"
+                "description"         : "所有当前渠道共用的请求字段集合。字段是否支持、必填条件、枚举、范围及默认值由具体模型限定；此集合不表示任意字段组合均可提交。"
             },
             "VideoRequestError"     : {
                 "title"     : "输入错误",
                 "type"      : "object",
                 "required"  : ["code", "message", "data"],
                 "properties": {
-                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"       },
-                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"},
-                    "data"   : {"type": "null",   "description": "无任务数据"                                  }
+                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"},
+                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"        },
+                    "data"   : {"type": "null",   "description": "无任务数据"                         }
                 }
             }
         }
@@ -279,7 +278,7 @@
                 "tags": ["通用视频接口"],
                 "operationId": "createVideo",
                 "summary": "提交视频生成任务",
-                "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
+                "description": "使用 JSON 提交异步视频生成任务。此处汇总所有可用请求字段；具体模型支持的字段、必填条件、默认值及组合限制，请查看对应模型调用文档。提交后保存公开任务 id，用于查询和下载。 任务完成后，推荐使用查询结果中的 url 下载视频，Ki 渠道使用 url_path；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
                 "requestBody": {
                     "required": true,
                     "content" : {
@@ -325,7 +324,7 @@
                 "responses": {
                     "200": {
                         "description": "视频任务对象。通过 status 区分生成中、成功与任务失败；异步任务失败与 HTTP 请求错误不同。",
-                        "content": {
+                        "content"    : {
                             "application/json": {
                                 "schema"  : {"$ref": "#/components/schemas/VideoTask"},
                                 "examples": {
@@ -398,7 +397,7 @@
                 "tags": ["通用视频接口"],
                 "operationId": "getVideo",
                 "summary": "查询视频任务",
-                "description": "使用创建响应中的 id 查询。当 status 为 completed 时，推荐使用本次查询结果中的 url 下载视频；相对路径需先拼接 API 服务地址，下载需携带同一 API 密钥。",
+                "description": "使用创建响应中的 id 查询。当 status 为 completed 时，推荐使用本次查询结果中的 url 下载视频，Ki 渠道使用 url_path；相对路径需先拼接 API 服务地址，下载需携带同一 API 密钥。",
                 "parameters": [
                     {
                         "name"       : "id",
@@ -412,7 +411,7 @@
                 "responses": {
                     "200": {
                         "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
-                        "content": {
+                        "content"    : {
                             "application/json": {
                                 "schema"  : {"$ref": "#/components/schemas/VideoTask"},
                                 "examples": {
@@ -464,11 +463,11 @@
         },
         "/v1/videos/{id}/content": {
             "get": {
-                "tags": ["通用视频接口"],
+                "tags"       : ["通用视频接口"],
                 "operationId": "downloadVideo",
-                "summary": "下载视频",
-                "description": "视频下载接口参考。实际调用流程推荐使用任务查询结果中的 url 获取视频；下载需使用提交时的同一 API 密钥。",
-                "parameters": [
+                "summary"    : "下载视频",
+                "description": "视频下载接口参考。实际调用流程推荐使用任务查询结果中的 url 获取视频，Ki 渠道使用 url_path；下载需使用提交时的同一 API 密钥。",
+                "parameters" : [
                     {
                         "name"       : "id",
                         "in"         : "path",
@@ -478,7 +477,7 @@
                         "example"    : "video_example"
                     }
                 ],
-                "responses": {
+                "responses"  : {
                     "200": {
                         "description": "视频文件内容",
                         "content"    : {

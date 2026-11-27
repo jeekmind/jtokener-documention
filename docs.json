@@ -40,7 +40,7 @@
                                 "group": "渠道介绍",
                                 "pages": [
                                     "api-reference/gxc/index", "channels/tyy",            "channels/hc",
-                                    "channels/myu",            "channels/me"
+                                    "channels/myu",            "channels/me",            "channels/ki"
                                 ]
                             },
                             {
@@ -65,6 +65,7 @@
                                 ]
                             },
                             { "group": "MiniMax 系列", "pages": ["api-reference/me/minimax-h3"] },
+                            { "group": "Magi 系列", "pages": ["api-reference/ki/magi-2"] },
                             {
                                 "group": "开发中文档",
                                 "pages": [

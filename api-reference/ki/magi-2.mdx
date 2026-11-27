@@ -1,0 +1,108 @@
+---
+title: "Ki Magi-2"
+description: "使用 Ki Magi-2 生成 1080p 视频，支持文本、首尾帧和参考媒体输入。"
+openapi: "api-reference/ki/magi-2.openapi.json POST /v1/videos"
+---
+
+使用 `ki-magi-2` 调用以下三种模式，通过 `input_references` 中的素材和 `role` 自动选择。
+
+## 模式与比例
+
+| 模式 | 素材要求 | `aspect_ratio` |
+| --- | --- | --- |
+| 文生视频 | 省略 `input_references` 或传空数组 | 默认 `16:9`，支持 `21:9`、`16:9`、`4:3`、`1:1`、`3:4`、`9:16` |
+| 首尾帧 | 一张 `first_frame` 图片，可搭配一张 `last_frame` 图片 | 只能省略或填 `media_adaptive`，由首帧决定比例 |
+| 参考媒体 | 至少一项 `reference` 图片、视频或音频 | 默认 `16:9`，支持的固定比例同文生视频 |
+
+素材的 `role` 默认是 `reference`。单张未指定角色的图片会进入参考媒体模式；使用图生视频时，请显式设置 `role: "first_frame"`。尾帧不能单独使用，首尾帧不能与参考媒体混用，每种帧角色最多一张图片。
+
+## 参数与素材规则
+
+`prompt` 必填，不能仅包含空白字符，最长 15000 字符。`seconds` 支持整数 4–30，默认 5。`resolution` 仅支持 `1080p`，省略时使用该值。
+
+| 素材类型 | 参考模式数量上限 | 格式与时长 |
+| --- | --- | --- |
+| 图片 | 10 张 | JPG、PNG、WEBP |
+| 视频 | 5 段 | MP4、MOV；每段 2–30 秒，累计不超过 30 秒 |
+| 音频 | 5 段 | MP3、WAV；每段 2–30 秒，累计不超过 30 秒 |
+
+素材使用 `input_references` 对象数组，每项包含 `type` 和 HTTP(S) `url`。素材链接须在生成期间持续可访问。服务会检查链接格式及数量，实际媒体格式、编码和时长由上游检查。示例素材地址为占位符，调用前请替换。
+
+### 生成选项
+
+| 字段 | 类型 | 约束与默认值 |
+| --- | --- | --- |
+| `options.generate_audio` | boolean | 是否生成声音，默认 `true` |
+| `options.video_generation_seed` | integer | 0–2147483647，省略时由上游随机选择 |
+
+请仅提交本页列出的请求字段。
+
+## 请求示例
+
+<Tabs>
+  <Tab title="文生视频">
+
+```json
+{
+  "model": "ki-magi-2",
+  "prompt": "飞机穿过云霄",
+  "seconds": 4
+}
+```
+
+  </Tab>
+  <Tab title="首尾帧">
+
+```json
+{
+  "model": "ki-magi-2",
+  "prompt": "镜头缓慢推进，水面泛起涟漪",
+  "seconds": 5,
+  "input_references": [
+    { "type": "image", "role": "first_frame", "url": "https://example.com/first.png" },
+    { "type": "image", "role": "last_frame", "url": "https://example.com/last.png" }
+  ]
+}
+```
+
+  </Tab>
+  <Tab title="参考媒体">
+
+```json
+{
+  "model": "ki-magi-2",
+  "prompt": "保持参考人物形象，并参考视频中的运镜",
+  "input_references": [
+    { "type": "image", "url": "https://example.com/person.png" },
+    { "type": "video", "url": "https://example.com/motion.mp4" }
+  ],
+  "options": { "generate_audio": false, "video_generation_seed": 0 }
+}
+```
+
+  </Tab>
+</Tabs>
+
+## 查询与下载
+
+提交后保存返回的 `id`，使用同一 API 密钥[查询视频任务](/api-reference/videos/retrieve)。任务依次可能处于 `queued`、`in_progress`、`completed` 或 `failed`；`unknown` 表示暂时无法确定状态，请继续查询同一任务。生成期间不提供实时进度，交付准备完成时进度为 100。
+
+成功查询返回 `url_path`。拼接 API 服务地址后，携带提交时的同一 API 密钥下载。未成功时不返回此下载字段。本渠道只提供主视频，不返回尾帧产物。
+
+```bash
+API_BASE_URL='https://tokener.jeekmind.com'
+# 从成功查询结果的 url_path 字段复制，以下仅为示例值
+VIDEO_PATH='/v1/videos/video_example/content'
+
+curl "${API_BASE_URL}${VIDEO_PATH}" \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -o video.mp4
+```
+
+查询响应的 `error` 在无错误时为 `null`，有失败原因时为包含 `message` 的对象。
+
+## 计费说明
+
+按请求的输出秒数计费，省略 `seconds` 时按默认的 5 秒计算。参考素材和是否生成声音不增加计费维度，关闭声音不改变价格。具体价格请查看[模型广场](https://tokener.jeekmind.com/pricing)。
+
+渠道支持的全部模型见 [Ki 渠道](/channels/ki)。
