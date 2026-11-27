@@ -223,7 +223,7 @@
           },
           "quota": {
             "type": "integer",
-            "description": "额度值，不能直接当作货币金额。"
+            "description": "本条日志记录的额度值。系统美元金额 = quota / quota_per_unit；人民币显示金额 = quota / quota_per_unit × usd_exchange_rate。换算配置通过 GET /api/status 获取。当前站点为 CNY、quota_per_unit=500000、usd_exchange_rate=7，因此示例 285714 对应 3.999996 元，保留两位小数显示为 ¥4.00。配置可能调整，不要重复乘以分组倍率或模型价格。"
           },
           "prompt_tokens": {
             "type": "integer",

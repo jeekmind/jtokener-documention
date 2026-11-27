@@ -85,7 +85,7 @@ curl --fail-with-body \
 | `content` | 日志说明或错误信息。 |
 | `token_id`、`token_name` | 调用模型所用的 API 令牌 ID 和名称，不是认证本接口的系统访问令牌。 |
 | `model_name` | 模型名称。 |
-| `quota` | 本条日志记录的额度值，不能直接当作货币金额。 |
+| `quota` | 本条日志记录的额度值。按下方公式换算为显示金额。 |
 | `prompt_tokens`、`completion_tokens` | 输入、输出 token 数。视频等任务可能为 `0`。 |
 | `use_time` | 耗时，单位秒。部分任务记录可能为 `0`。 |
 | `is_stream` | 是否为流式调用。 |
@@ -107,6 +107,81 @@ curl --fail-with-body \
 | `7` | 登录 |
 
 可返回的日志类型取决于站点版本及记录策略。
+
+## 将额度转换为显示金额
+
+`quota` 是内部额度整数。你需要先将它除以 `quota_per_unit`，得到系统美元金额，再按站点的显示币种换算。
+
+当前站点使用人民币显示。你可以通过无需认证的 `GET /api/status` 读取换算配置：
+
+```bash
+curl 'https://tokener.jeekmind.com/api/status'
+```
+
+以下为本次核验返回的相关字段，实际响应还包含其他站点配置：
+
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "quota_per_unit": 500000,
+    "quota_display_type": "CNY",
+    "usd_exchange_rate": 7
+  }
+}
+```
+
+人民币显示金额的计算公式为：
+
+```text
+系统美元金额 = quota / quota_per_unit
+人民币显示金额（元） = quota / quota_per_unit × usd_exchange_rate
+```
+
+以上文的消费日志为例：
+
+```text
+quota = 285714
+系统美元金额 = 285714 / 500000 = 0.571428
+人民币显示金额 = 0.571428 × 7 = 3.999996 元
+保留两位小数显示：¥4.00
+```
+
+下面的 JavaScript 示例动态读取配置，并将额度格式化为人民币金额。示例统一保留两位小数；控制台可能根据金额大小使用不同的显示精度。
+
+```javascript
+const statusResponse = await fetch('https://tokener.jeekmind.com/api/status');
+const statusBody = await statusResponse.json();
+if (!statusResponse.ok || !statusBody.success) {
+  throw new Error(statusBody.message || `HTTP ${statusResponse.status}`);
+}
+
+const config = statusBody.data;
+if (
+  config.quota_display_type !== 'CNY' ||
+  !Number.isFinite(config.quota_per_unit) || config.quota_per_unit <= 0 ||
+  !Number.isFinite(config.usd_exchange_rate) || config.usd_exchange_rate <= 0
+) {
+  throw new Error('请检查站点显示币种及额度换算配置');
+}
+
+function formatQuotaCNY(quota) {
+  const amount = quota / config.quota_per_unit * config.usd_exchange_rate;
+  return new Intl.NumberFormat('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+console.log(formatQuotaCNY(285714)); // ¥4.00（按上述配置）
+```
+
+`quota_per_unit` 和显示汇率可能由管理员调整，请以 `/api/status` 的当前配置为准。`usd_exchange_rate` 是站点配置的显示汇率。若 `quota_display_type` 为 `USD`，显示金额直接使用 `quota / quota_per_unit`，无需再乘人民币汇率。
+
+消费日志中的 `quota` 已是记录的消耗额度，展示时不要再次乘以 `other.group_ratio` 或模型价格。汇总多条日志时，先累加原始 `quota`，再换算并格式化，避免逐条舍入产生误差。
 
 ## 解析任务计费信息
 
