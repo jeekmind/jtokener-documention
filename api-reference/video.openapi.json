@@ -61,7 +61,7 @@
                         "type": "string",
                         "format": "uri-reference",
                         "pattern": "^/v1/videos/[^/]+/content$",
-                        "description": "GXC、TYY、HC、MYU、ME 成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证"
+                        "description": "成功时返回的下载路径，不含 BaseURL，格式为 /v1/videos/{id}/content，需使用同一 New API Key 认证。Ki 渠道保留此字段用于兼容，已弃用且值与 url_path 相同；Ki 新客户端请使用 url_path。"
                     },
                     "url_path"      : {
                         "type"       : "string",

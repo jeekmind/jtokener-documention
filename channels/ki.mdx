@@ -17,4 +17,4 @@ description: "查看 Ki 渠道支持的 Magi-2 模型和调用入口。"
 
 接口基础地址为 `https://tokener.jeekmind.com`。密钥获取方式见[快速入门](/user-guide/start/quickstart)。
 
-同一个模型支持文生视频、首尾帧和参考媒体三种模式，根据 `input_references` 自动选择。只提供主视频产物。成功响应使用 `url_path` 返回下载路径。
+同一个模型支持文生视频、首尾帧和参考媒体三种模式，根据 `input_references` 自动选择。只提供主视频产物。成功响应使用 `url_path` 返回下载路径，同时保留值相同的已弃用兼容字段 `url`。新客户端请使用 `url_path`。

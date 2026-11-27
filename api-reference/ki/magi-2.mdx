@@ -87,7 +87,7 @@ openapi: "api-reference/ki/magi-2.openapi.json POST /v1/videos"
 
 提交后保存返回的 `id`，使用同一 API 密钥[查询视频任务](/api-reference/videos/retrieve)。任务依次可能处于 `queued`、`in_progress`、`completed` 或 `failed`；`unknown` 表示暂时无法确定状态，请继续查询同一任务。生成期间不提供实时进度，交付准备完成时进度为 100。
 
-成功查询返回 `url_path`。拼接 API 服务地址后，携带提交时的同一 API 密钥下载。未成功时不返回此下载字段。本渠道只提供主视频，不返回尾帧产物。
+成功查询返回 `url_path`，同时保留值相同的已弃用兼容字段 `url`。新客户端请使用 `url_path`。拼接 API 服务地址后，携带提交时的同一 API 密钥下载。未成功时不返回这两个下载字段。本渠道只提供主视频，不返回尾帧产物。
 
 ```bash
 API_BASE_URL='https://tokener.jeekmind.com'

@@ -31,14 +31,19 @@
                         "error"     : null
                     }
                 ],
-                "not": { "required": ["url_path"] }
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"] },
+                        { "required": ["url"     ] }
+                    ]
+                }
             },
             "VideoTaskCompleted"    : {
                 "title"               : "成功",
                 "type"                : "object",
                 "required"            : [
                     "id",           "object",       "model",        "status",       "progress",     "created_at",
-                    "error",        "completed_at", "url_path"
+                    "error",        "completed_at", "url_path",     "url"
                 ],
                 "properties"          : {
                     "id"          : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
@@ -49,6 +54,13 @@
                     "created_at"  : {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "completed_at": {"type": "integer", "description": "完成时间，Unix 秒级时间戳"},
                     "error"       : {"type": "null", "description": "成功时固定为 null"},
+                    "url"         : {
+                        "type"       : "string",
+                        "format"     : "uri-reference",
+                        "pattern"    : "^/v1/videos/[^/]+/content$",
+                        "deprecated" : true,
+                        "description": "已弃用的兼容字段，值与 url_path 相同；新客户端请使用 url_path。"
+                    },
                     "url_path"    : {
                         "type"       : "string",
                         "format"     : "uri-reference",
@@ -67,7 +79,8 @@
                         "created_at"  : 1793851200,
                         "error"       : null,
                         "completed_at": 1793851260,
-                        "url_path"    : "/v1/videos/video_example/content"
+                        "url_path"    : "/v1/videos/video_example/content",
+                        "url"         : "/v1/videos/video_example/content"
                     }
                 ]
             },
@@ -102,7 +115,12 @@
                         "error"     : {"message": "视频生成失败，请检查输入素材后重试"}
                     }
                 ],
-                "not": { "required": ["url_path"] }
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"] },
+                        { "required": ["url"     ] }
+                    ]
+                }
             },
             "VideoTaskUnknown"      : {
                 "title": "状态未知",
@@ -135,7 +153,12 @@
                         "error"     : {"message": "暂时无法确定任务状态，请稍后查询"}
                     }
                 ],
-                "not": { "required": ["url_path"] }
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"] },
+                        { "required": ["url"     ] }
+                    ]
+                }
             },
             "VideoTask"             : {
                 "title": "视频任务响应",
@@ -398,7 +421,8 @@
                                             "created_at"  : 1793851200,
                                             "error"       : null,
                                             "completed_at": 1793851260,
-                                            "url_path"    : "/v1/videos/video_example/content"
+                                            "url_path"    : "/v1/videos/video_example/content",
+                                            "url"         : "/v1/videos/video_example/content"
                                         }
                                     },
                                     "failed"    : {

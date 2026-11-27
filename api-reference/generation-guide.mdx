@@ -102,7 +102,7 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
 | `progress` | integer | 完成进度，示例为 `100` |
 | `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
 | `error` | null | 固定为 `null` |
-| `url` | string | GXC、TYY、HC、MYU、ME 的视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
+| `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载；Ki 保留此字段用于兼容，已弃用，请使用 `url_path` |
 | `url_path` | string | Ki 成功时返回的主视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
 | `url_last_frame` | string | 可选，仅 GXC、TYY 成功且有尾帧时返回；认证方式同视频下载 |
 
