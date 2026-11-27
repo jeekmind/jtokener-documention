@@ -173,8 +173,8 @@
                     "seconds"         : {
                         "type"       : "integer",
                         "minimum"    : 4,
-                        "description": "输出视频时长，单位为秒；2K 最长 15 秒，其他分辨率最长 30 秒",
-                        "maximum"    : 30
+                        "description": "输出视频时长，单位为秒",
+                        "maximum"    : 15
                     },
                     "resolution"      : {
                         "type"       : "string",
