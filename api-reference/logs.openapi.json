@@ -3,7 +3,7 @@
   "info": {
     "title": "个人日志 API",
     "version": "0.1.0",
-    "description": "查询当前用户日志。需要系统访问令牌和匹配的用户 ID，不能使用模型调用 API 密钥。"
+    "description": "查询当前用户日志。使用 nap_ 系统访问令牌时无需 New-Api-User 请求头，接口根据令牌识别用户。不能使用模型调用 API 密钥。"
   },
   "servers": [
     {
@@ -22,16 +22,6 @@
         "summary": "获取个人日志",
         "description": "分页查询当前用户日志。可查询的时间范围受站点配置及日志保留策略限制。",
         "parameters": [
-          {
-            "name": "New-Api-User",
-            "in": "header",
-            "required": true,
-            "description": "与系统访问令牌所属用户一致的用户 ID。",
-            "schema": {
-              "type": "integer"
-            },
-            "example": 3
-          },
           {
             "name": "p",
             "in": "query",

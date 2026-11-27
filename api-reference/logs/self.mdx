@@ -8,10 +8,9 @@ openapi: "api-reference/logs.openapi.json GET /api/log/self"
 
 ## 准备认证信息
 
-在 **个人设置 → 安全设置 → 系统访问令牌** 中生成访问令牌，并在请求头中传入：
+在 **个人设置 → 安全设置 → 系统访问令牌** 中生成访问令牌，并在请求头中传入 `Authorization: Bearer YOUR_ACCESS_TOKEN`。
 
-- `Authorization: Bearer YOUR_ACCESS_TOKEN`：系统访问令牌。
-- `New-Api-User: YOUR_USER_ID`：与令牌所属用户一致的用户 ID。
+当前站点使用 `nap_` 系统访问令牌时，无需传入 `New-Api-User`。接口会根据访问令牌识别当前用户；已验证省略该请求头仍返回 HTTP `200` 和 `success: true`。
 
 <Warning>
 此接口需要系统访问令牌。用于调用模型的 `sk-` API 密钥无法通过此接口的认证，即使你同时提供了 `New-Api-User`。
@@ -19,13 +18,12 @@ openapi: "api-reference/logs.openapi.json GET /api/log/self"
 
 ## 请求示例
 
-将 `YOUR_ACCESS_TOKEN` 和 `YOUR_USER_ID` 替换为你的系统访问令牌及用户 ID。
+将 `YOUR_ACCESS_TOKEN` 替换为你的系统访问令牌。
 
 ```bash
 curl --fail-with-body \
   'https://tokener.jeekmind.com/api/log/self?p=1&page_size=20' \
-  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
-  -H 'New-Api-User: YOUR_USER_ID'
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN'
 ```
 
 使用 `p` 指定页码，从 `1` 开始。使用 `page_size` 指定每页条数，最大为 `100`。响应中的页码字段名为 `page`。
@@ -234,4 +232,4 @@ for (const log of body.data.items) {
 }
 ```
 
-遇到认证失败时，检查你是否使用了系统访问令牌，以及 `New-Api-User` 是否与令牌所属用户一致。其他错误请读取实际 HTTP 状态码和 `message`；不要仅凭 HTTP `200` 判断业务成功。
+遇到认证失败时，检查你是否使用了有效的系统访问令牌。其他错误请读取实际 HTTP 状态码和 `message`；不要仅凭 HTTP `200` 判断业务成功。
