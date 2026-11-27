@@ -1,0 +1,162 @@
+---
+title: "获取个人日志"
+description: "分页查询当前用户的调用、消费和错误日志，获取模型、额度、耗时及任务计费信息。"
+openapi: "api-reference/logs.openapi.json GET /api/log/self"
+---
+
+使用 `GET /api/log/self` 分页查询当前用户的日志。接口基础地址为 `https://tokener.jeekmind.com`。
+
+## 准备认证信息
+
+在 **个人设置 → 安全设置 → 系统访问令牌** 中生成访问令牌，并在请求头中传入：
+
+- `Authorization: Bearer YOUR_ACCESS_TOKEN`：系统访问令牌。
+- `New-Api-User: YOUR_USER_ID`：与令牌所属用户一致的用户 ID。
+
+<Warning>
+此接口需要系统访问令牌。用于调用模型的 `sk-` API 密钥无法通过此接口的认证，即使你同时提供了 `New-Api-User`。
+</Warning>
+
+## 请求示例
+
+将 `YOUR_ACCESS_TOKEN` 和 `YOUR_USER_ID` 替换为你的系统访问令牌及用户 ID。
+
+```bash
+curl --fail-with-body \
+  'https://tokener.jeekmind.com/api/log/self?p=1&page_size=20' \
+  -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+  -H 'New-Api-User: YOUR_USER_ID'
+```
+
+使用 `p` 指定页码，从 `1` 开始。使用 `page_size` 指定每页条数，最大为 `100`。响应中的页码字段名为 `page`。
+
+你可以通过 `type`、`start_timestamp`、`end_timestamp`、`model_name`、`token_name`、`group` 和 `request_id` 筛选日志。时间参数使用 Unix 秒级时间戳。可查询的时间范围受站点配置和日志保留策略限制。
+
+## 成功响应
+
+接口返回 HTTP `200`。以下示例基于已验证的响应结构，用户、令牌、请求和任务标识均为占位值。
+
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "page": 1,
+    "page_size": 1,
+    "total": 143,
+    "items": [
+      {
+        "id": 1,
+        "user_id": 3,
+        "created_at": 1795695591,
+        "type": 2,
+        "content": "Action , Billing parameters: output_video_duration: 4",
+        "username": "example-user",
+        "token_name": "example-token",
+        "model_name": "ki-magi-2",
+        "quota": 285714,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "use_time": 0,
+        "is_stream": false,
+        "channel": 21,
+        "channel_name": "",
+        "token_id": 14,
+        "group": "example-group",
+        "ip": "",
+        "request_id": "example-request-id",
+        "other": "{\"billing_mode\":\"tiered_expr\",\"group_ratio\":1,\"is_task\":true,\"matched_tier\":\"base\",\"model_price\":0,\"request_path\":\"/v1/videos\",\"task_id\":\"task_example\",\"usage_facts\":{\"output_video_duration\":4}}"
+      }
+    ]
+  }
+}
+```
+
+`data.total` 是符合筛选条件的总条数，`data.items` 是当前页的日志数组。示例为节省篇幅，仅展示了 `other` 中的部分属性。
+
+## 理解日志字段
+
+| 字段 | 含义 |
+| --- | --- |
+| `id` | 日志列表中的展示序号。不要用作跨页或跨请求的稳定标识。 |
+| `user_id`、`username` | 日志所属用户的 ID 和用户名。 |
+| `created_at` | 日志时间，单位为 Unix 秒。 |
+| `type` | 日志类型，见下表。 |
+| `content` | 日志说明或错误信息。 |
+| `token_id`、`token_name` | 调用模型所用的 API 令牌 ID 和名称，不是认证本接口的系统访问令牌。 |
+| `model_name` | 模型名称。 |
+| `quota` | 本条日志记录的额度值，不能直接当作货币金额。 |
+| `prompt_tokens`、`completion_tokens` | 输入、输出 token 数。视频等任务可能为 `0`。 |
+| `use_time` | 耗时，单位秒。部分任务记录可能为 `0`。 |
+| `is_stream` | 是否为流式调用。 |
+| `channel`、`channel_name` | 渠道 ID 和名称。个人日志中的渠道名称可能为空。 |
+| `group` | 调用所属分组。 |
+| `ip` | 调用方 IP。未记录时为空字符串。 |
+| `request_id` | 请求标识，可用于排查问题。未提供时可能省略。 |
+| `other` | 扩展信息，类型为 JSON 字符串。具体属性随模型和日志类型变化。 |
+
+| `type` | 日志类型 |
+| --- | --- |
+| `0` | 未知；作为查询参数时表示不按类型筛选。 |
+| `1` | 充值 |
+| `2` | 消费 |
+| `3` | 管理 |
+| `4` | 系统 |
+| `5` | 错误 |
+| `6` | 退款 |
+| `7` | 登录 |
+
+可返回的日志类型取决于站点版本及记录策略。
+
+## 解析任务计费信息
+
+`other` 是字符串，你需要单独解析它。下面展示视频任务中可能返回的属性：
+
+```json
+{
+  "billing_mode": "tiered_expr",
+  "group_ratio": 1,
+  "is_task": true,
+  "matched_tier": "base",
+  "model_price": 0,
+  "request_path": "/v1/videos",
+  "task_id": "task_example",
+  "usage_facts": {
+    "output_video_duration": 4
+  }
+}
+```
+
+`usage_facts.output_video_duration` 在此示例中为输出视频时长，单位秒。`other` 还可能包含计费表达式 `expr_b64`、日志展示参数 `content_parts`，或错误代码和 HTTP 状态码。不要假设每条日志都包含这些属性。
+
+```javascript
+const body = await response.json();
+if (!response.ok || !body.success) {
+  throw new Error(body.message || `HTTP ${response.status}`);
+}
+
+for (const log of body.data.items) {
+  let other = {};
+  try {
+    other = JSON.parse(log.other || '{}') ?? {};
+  } catch {
+    // 保留原日志，兼容未按 JSON 格式保存的历史扩展信息。
+  }
+  console.log(log.request_id, other.task_id, other.usage_facts);
+}
+```
+
+## 处理认证失败
+
+令牌无效或使用模型调用密钥时，已验证的响应为 HTTP `401`：
+
+```json
+{
+  "code": "AUTH_UNAUTHORIZED",
+  "message": "Unauthorized, invalid access token",
+  "message_key": "Unauthorized, invalid access token",
+  "success": false
+}
+```
+
+遇到认证失败时，检查你是否使用了系统访问令牌，以及 `New-Api-User` 是否与令牌所属用户一致。其他错误请读取实际 HTTP 状态码和 `message`；不要仅凭 HTTP `200` 判断业务成功。
