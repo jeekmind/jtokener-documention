@@ -3,6 +3,8 @@ title: "GXC Seedance 2.5"
 openapi: "api-reference/gxc/seedance25.openapi.json POST /v1/videos"
 ---
 
-提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)。当 `status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频；若为相对路径，先拼接 API 服务地址，并携带提交时的同一 API 密钥。
+提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)。当 `status` 为 `completed` 时，推荐使用查询结果中的 `url_path` 下载视频；若为相对路径，先拼接 API 服务地址，并携带提交时的同一 API 密钥。
 
 `seconds` 默认 5 秒，`resolution` 默认 `720p`，取值区分大小写。参考素材、生成选项和尾帧下载方式见 [GXC 渠道](/api-reference/gxc/index)。
+
+`url` 已弃用，仅保留用于兼容，值与 `url_path` 相同。新客户端请使用 `url_path`。

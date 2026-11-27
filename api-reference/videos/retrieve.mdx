@@ -6,13 +6,13 @@ openapi: "api-reference/video.openapi.json GET /v1/videos/{id}"
 
 ## 任务完成后获取视频
 
-当 `status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频；Ki 渠道使用 `url_path`。请使用返回的地址，无需根据任务 ID 自行拼接下载路径。
+当 `status` 为 `completed` 时，推荐使用查询结果中的 `url_path` 下载视频。请使用返回的地址，无需根据任务 ID 自行拼接下载路径。
 
 当前渠道返回相对路径时，先拼接 API 服务地址。下载时携带提交任务的同一 API 密钥。
 
 ```bash
 API_BASE_URL='https://tokener.jeekmind.com'
-# 从查询结果的 url 字段复制；Ki 使用 url_path。以下仅为示例值
+# 从成功查询结果的 url_path 字段复制，以下仅为示例值
 VIDEO_URL='/v1/videos/video_example/content'
 
 curl "${API_BASE_URL}${VIDEO_URL}" \
@@ -20,6 +20,8 @@ curl "${API_BASE_URL}${VIDEO_URL}" \
   -o video.mp4
 ```
 
-当前所有渠道返回的 `url` 均为相对路径，需要拼接 API 服务地址后使用。
+当前所有渠道返回的 `url_path` 均为相对路径，需要拼接 API 服务地址后使用。
 
-GXC、TYY 成功且有尾帧时还会返回 `url_last_frame`，你可以按同样方式下载尾帧。
+GXC、TYY 成功且有尾帧时还会返回 `url_path_last_frame`，你可以按同样方式下载尾帧。
+
+`url` 已弃用，仅保留用于兼容，值与 `url_path` 相同。新客户端请使用 `url_path`。尾帧的兼容字段 `url_last_frame` 也已弃用，请使用 `url_path_last_frame`。

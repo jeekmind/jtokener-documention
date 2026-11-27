@@ -16,8 +16,10 @@ description: "查看 TYY 渠道支持的模型和调用入口。"
 
 1. 使用 `POST /v1/videos` 提交 JSON 任务。
 2. 保存返回的 `id`，通过 `GET /v1/videos/{id}` 查询。
-3. 当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url` 下载视频；相对路径需先拼接 API 服务地址，并携带同一 API 密钥。
+3. 当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url_path` 下载视频；相对路径需先拼接 API 服务地址，并携带同一 API 密钥。
 
 接口基础地址为 `https://tokener.jeekmind.com`。查询和下载均使用提交时的同一 API 密钥。密钥获取方式见[快速入门](/user-guide/start/quickstart)。
 
-成功响应的 `url` 是相对路径，需要拼接 API 服务地址。该渠道成功且有尾帧时还会返回 `url_last_frame`。
+成功响应的 `url_path` 是相对路径，需要拼接 API 服务地址。该渠道成功且有尾帧时还会返回 `url_path_last_frame`。
+
+`url` 已弃用，仅保留用于兼容，值与 `url_path` 相同。新客户端请使用 `url_path`。尾帧的兼容字段 `url_last_frame` 也已弃用，请使用 `url_path_last_frame`。

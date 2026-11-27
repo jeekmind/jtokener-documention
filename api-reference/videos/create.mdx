@@ -104,6 +104,8 @@ curl 'https://tokener.jeekmind.com/v1/videos' \
 
 保存返回的 `id`，使用同一 API 密钥[查询视频任务](/api-reference/videos/retrieve)。提交成功表示任务已受理，最终结果以 `status` 为准。
 
-当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url` 下载视频；Ki 渠道使用 `url_path`。相对路径需先拼接 API 服务地址，下载时携带提交时的同一 API 密钥。仅 GXC、TYY 在成功且有尾帧时返回可选的 `url_last_frame`。响应结构按生成中、成功、错误区分，`unknown` 表示暂时无法确定状态。
+当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url_path` 下载视频。相对路径需先拼接 API 服务地址，下载时携带提交时的同一 API 密钥。仅 GXC、TYY 在成功且有尾帧时返回可选的 `url_path_last_frame`。响应结构按生成中、成功、错误区分，`unknown` 表示暂时无法确定状态。
 
 HTTP 状态码非 `2xx` 时，请按[错误处理](/api-reference/errors)章节解析错误响应。
+
+`url` 已弃用，仅保留用于兼容，值与 `url_path` 相同。新客户端请使用 `url_path`。尾帧的兼容字段 `url_last_frame` 也已弃用，请使用 `url_path_last_frame`。

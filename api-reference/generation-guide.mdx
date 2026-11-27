@@ -3,7 +3,7 @@ title: "模型与生成任务"
 description: "获取模型列表、提交生成任务、查询任务结果和本次费用，以及下载视频。"
 ---
 
-你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，使用任务 ID 查询结果和本次费用，并在任务完成后使用查询结果中的 `url` 下载视频。Ki 渠道使用 `url_path` 下载视频。
+你可以按以下顺序调用接口：获取模型列表，选择模型并提交生成任务，使用任务 ID 查询结果和本次费用，并在任务完成后使用查询结果中的 `url_path` 下载视频。
 
 <Note>
   本页为接口文档草稿。模型列表和视频查询的返回示例已补充并脱敏。
@@ -102,9 +102,10 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
 | `progress` | integer | 完成进度，示例为 `100` |
 | `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
 | `error` | null | 固定为 `null` |
-| `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载；Ki 保留此字段用于兼容，已弃用，请使用 `url_path` |
-| `url_path` | string | Ki 成功时返回的主视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
-| `url_last_frame` | string | 可选，仅 GXC、TYY 成功且有尾帧时返回；认证方式同视频下载 |
+| `url_path` | string | 成功时返回的主视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
+| `url_path_last_frame` | string | 可选，仅 GXC、TYY 成功且有尾帧时返回；认证方式同视频下载 |
+| `url` | string | 已弃用，兼容字段，值与 `url_path` 相同 |
+| `url_last_frame` | string | 已弃用，有尾帧时返回，值与 `url_path_last_frame` 相同 |
 
   </Tab>
   <Tab title="错误">
@@ -123,8 +124,8 @@ curl --location 'https://tokener.jeekmind.com/v1/models' \
   </Tab>
 </Tabs>
 
-生成中和错误响应不返回 `url`、`url_path` 或 `url_last_frame`。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
+生成中和错误响应不返回下载字段（包括兼容字段）。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
 
 任务成功时，服务还可能返回 `final_cost`，表示本次任务的最终费用，单位为人民币元。
 
-任务未完成时，可继续使用同一 `id` 查询。当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url` 下载视频，Ki 使用 `url_path`；相对路径需先拼接 API 服务地址，并携带提交时的同一 API 密钥。
+任务未完成时，可继续使用同一 `id` 查询。当查询结果的 `status` 为 `completed` 时，推荐使用其中的 `url_path` 下载视频；相对路径需先拼接 API 服务地址，并携带提交时的同一 API 密钥。

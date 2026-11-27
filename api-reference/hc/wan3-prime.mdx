@@ -19,10 +19,12 @@ openapi: "api-reference/hc/wan3-prime.openapi.json POST /v1/videos"
 
 ## 查询与下载
 
-提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)。当 `status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频；若为相对路径，先拼接 API 服务地址，并携带提交时的同一 API 密钥。
+提交后，使用返回的 `id` [查询视频任务](/api-reference/videos/retrieve)。当 `status` 为 `completed` 时，推荐使用查询结果中的 `url_path` 下载视频；若为相对路径，先拼接 API 服务地址，并携带提交时的同一 API 密钥。
 
-成功时返回 `url`；路径相对于 API 服务地址，下载需携带提交时的同一 API 密钥。此渠道仅提供主视频，不返回 `url_last_frame`。
+成功时返回 `url_path`；路径相对于 API 服务地址，下载需携带提交时的同一 API 密钥。此渠道仅提供主视频，不返回 `url_path_last_frame`。
 
 响应字段及示例按生成中、成功、错误区分。`completed_at` 和下载字段仅在成功分支展示；成功时 `completed_at` 必填。错误原因在 `error.message` 中，没有错误原因时 `error` 为 `null`。`unknown` 表示暂时无法确定状态，可以继续查询。
 
 渠道支持的全部模型见 [HC 渠道](/channels/hc)。
+
+`url` 已弃用，仅保留用于兼容，值与 `url_path` 相同。新客户端请使用 `url_path`。

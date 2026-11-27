@@ -2,19 +2,15 @@
     "openapi"   : "3.1.0",
     "servers"   : [ {"url": "https://tokener.jeekmind.com"} ],
     "security"  : [ {"bearerAuth": []} ],
-    "info"      : {
-        "title"      : "TYY Seedance 2.0 Fast",
-        "version"    : "1.0.0",
-        "description": "JSON 异步视频生成接口。响应字段按任务状态区分。"
-    },
+    "info"      : {"title": "TYY Seedance 2.0 Fast", "version": "1.0.0", "description": "JSON 异步视频生成接口。响应字段按任务状态区分。"},
     "components": {
         "securitySchemes": { "bearerAuth": {"type": "http", "scheme": "bearer", "description": "技元 API 密钥"} },
         "schemas"        : {
             "VideoTaskGenerating"   : {
-                "title"               : "生成中",
-                "type"                : "object",
-                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
-                "properties"          : {
+                "title": "生成中",
+                "type": "object",
+                "required": ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties": {
                     "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
                     "object"    : {"const": "video", "type": "string"},
                     "model"     : {"type": "string", "description": "客户端请求的模型名称"},
@@ -23,8 +19,16 @@
                     "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "error"     : {"type": "null", "description": "无错误时返回 null"}
                 },
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"           ] },
+                        { "required": ["url"                ] },
+                        { "required": ["url_path_last_frame"] },
+                        { "required": ["url_last_frame"     ] }
+                    ]
+                },
                 "additionalProperties": true,
-                "examples"            : [
+                "examples": [
                     {
                         "id"        : "video_example",
                         "object"    : "video",
@@ -41,54 +45,67 @@
                 "type"                : "object",
                 "required"            : [
                     "id",           "object",       "model",        "status",       "progress",     "created_at",
-                    "error",        "completed_at", "url"
+                    "error",        "completed_at", "url",          "url_path"
                 ],
                 "properties"          : {
-                    "id"            : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
-                    "object"        : {"const": "video", "type": "string"},
-                    "model"         : {"type": "string", "description": "客户端请求的模型名称"},
-                    "status"        : { "type": "string", "enum": ["completed"] },
-                    "progress"      : {
-                        "type"       : "integer",
-                        "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"
-                    },
-                    "created_at"    : {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
-                    "completed_at"  : {"type": "integer", "description": "完成时间，Unix 秒级时间戳"},
-                    "error"         : {"type": "null", "description": "成功时固定为 null"},
-                    "url"           : {
-                        "type": "string",
-                        "format": "uri-reference",
-                        "pattern": "^/v1/videos/[^/]+/content$",
+                    "id": {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
+                    "object": {"const": "video", "type": "string"},
+                    "model": {"type": "string", "description": "客户端请求的模型名称"},
+                    "status": { "type": "string", "enum": ["completed"] },
+                    "progress": {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
+                    "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
+                    "completed_at": {"type": "integer", "description": "完成时间，Unix 秒级时间戳"},
+                    "error": {"type": "null", "description": "成功时固定为 null"},
+                    "url_path": {
+                        "type"       : "string",
+                        "format"     : "uri-reference",
+                        "pattern"    : "^/v1/videos/[^/]+/content$",
                         "description": "成功时返回的网关主视频下载路径 /v1/videos/{id}/content，不含 BaseURL；使用公开任务 ID，需 New API Key 认证"
                     },
-                    "url_last_frame": {
+                    "url": {
+                        "deprecated" : true,
+                        "type"       : "string",
+                        "format"     : "uri-reference",
+                        "pattern"    : "^/v1/videos/[^/]+/content$",
+                        "description": "已废弃，保留用于兼容；与 url_path 相同，请改用 url_path"
+                    },
+                    "url_path_last_frame": {
                         "type": "string",
                         "format": "uri-reference",
                         "pattern": "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
                         "description": "成功且上游 content.last_frame_url 存在时返回的 last_frame 产物下载路径 /v1/tasks/{id}/artifacts/last_frame/content，不含 BaseURL，需 New API Key 认证"
+                    },
+                    "url_last_frame": {
+                        "deprecated" : true,
+                        "type"       : "string",
+                        "format"     : "uri-reference",
+                        "pattern"    : "^/v1/tasks/[^/]+/artifacts/last_frame/content$",
+                        "description": "已废弃，保留用于兼容；与 url_path_last_frame 相同，请改用 url_path_last_frame"
                     }
                 },
                 "additionalProperties": true,
                 "examples"            : [
                     {
-                        "id"            : "video_example",
-                        "object"        : "video",
-                        "model"         : "tyy-seedance-2-0-fast-260807",
-                        "status"        : "completed",
-                        "progress"      : 100,
-                        "created_at"    : 1793851200,
-                        "error"         : null,
-                        "completed_at"  : 1793851260,
-                        "url"           : "/v1/videos/video_example/content",
+                        "id": "video_example",
+                        "object": "video",
+                        "model": "tyy-seedance-2-0-fast-260807",
+                        "status": "completed",
+                        "progress": 100,
+                        "created_at": 1793851200,
+                        "error": null,
+                        "completed_at": 1793851260,
+                        "url_path": "/v1/videos/video_example/content",
+                        "url": "/v1/videos/video_example/content",
+                        "url_path_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content",
                         "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
                     }
                 ]
             },
             "VideoTaskFailed"       : {
-                "title"               : "错误",
-                "type"                : "object",
-                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
-                "properties"          : {
+                "title": "错误",
+                "type": "object",
+                "required": ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties": {
                     "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
                     "object"    : {"const": "video", "type": "string"},
                     "model"     : {"type": "string", "description": "客户端请求的模型名称"},
@@ -96,15 +113,23 @@
                     "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
                     "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "error"     : {
-                        "type": ["object", "null"],
-                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-                        "required": ["message"],
-                        "properties": { "message": {"type": "string", "description": "任务失败原因"} },
+                        "type"                : ["object", "null"],
+                        "description"         : "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required"            : ["message"],
+                        "properties"          : { "message": {"type": "string", "description": "任务失败原因"} },
                         "additionalProperties": false
                     }
                 },
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"           ] },
+                        { "required": ["url"                ] },
+                        { "required": ["url_path_last_frame"] },
+                        { "required": ["url_last_frame"     ] }
+                    ]
+                },
                 "additionalProperties": true,
-                "examples"            : [
+                "examples": [
                     {
                         "id"        : "video_example",
                         "object"    : "video",
@@ -117,10 +142,10 @@
                 ]
             },
             "VideoTaskUnknown"      : {
-                "title"               : "状态未知",
-                "type"                : "object",
-                "required"            : ["id", "object", "model", "status", "progress", "created_at", "error"],
-                "properties"          : {
+                "title": "状态未知",
+                "type": "object",
+                "required": ["id", "object", "model", "status", "progress", "created_at", "error"],
+                "properties": {
                     "id"        : {"type": "string", "description": "网关公开任务 ID，用于后续查询和下载"},
                     "object"    : {"const": "video", "type": "string"},
                     "model"     : {"type": "string", "description": "客户端请求的模型名称"},
@@ -128,15 +153,23 @@
                     "progress"  : {"type": "integer", "description": "宿主将内部进度字符串转换为整数，解析失败时为 0"},
                     "created_at": {"type": "integer", "description": "任务创建时间，Unix 秒级时间戳"},
                     "error"     : {
-                        "type": ["object", "null"],
-                        "description": "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
-                        "required": ["message"],
-                        "properties": { "message": {"type": "string", "description": "任务失败原因"} },
+                        "type"                : ["object", "null"],
+                        "description"         : "始终返回；未成功且宿主提供失败原因时为包含 message 的对象，无错误或成功时为 null",
+                        "required"            : ["message"],
+                        "properties"          : { "message": {"type": "string", "description": "任务失败原因"} },
                         "additionalProperties": false
                     }
                 },
+                "not": {
+                    "anyOf": [
+                        { "required": ["url_path"           ] },
+                        { "required": ["url"                ] },
+                        { "required": ["url_path_last_frame"] },
+                        { "required": ["url_last_frame"     ] }
+                    ]
+                },
                 "additionalProperties": true,
-                "examples"            : [
+                "examples": [
                     {
                         "id"        : "video_example",
                         "object"    : "video",
@@ -158,11 +191,11 @@
                 ]
             },
             "VideoGenerationRequest": {
-                "title": "VideoGenerationRequest",
-                "type": "object",
+                "title"               : "VideoGenerationRequest",
+                "type"                : "object",
                 "additionalProperties": false,
-                "required": ["model"],
-                "properties": {
+                "required"            : ["model"],
+                "properties"          : {
                     "model"           : {
                         "type"       : "string",
                         "description": "模型调用名",
@@ -346,19 +379,15 @@
                         "additionalProperties": false,
                         "description"         : "视频生成选项",
                         "properties"          : {
-                            "return_last_frame": {
-                                "type"       : "boolean",
-                                "description": "是否返回最后一帧",
-                                "default"    : false
-                            },
-                            "watermark"        : {"type": "boolean", "description": "是否添加水印", "default": false},
-                            "generate_audio"   : {"type": "boolean", "description": "是否生成音频", "default": true}
+                            "return_last_frame": {"type": "boolean", "description": "是否返回最后一帧", "default": false},
+                            "watermark"        : {"type": "boolean", "description": "是否添加水印",   "default": false},
+                            "generate_audio"   : {"type": "boolean", "description": "是否生成音频",   "default": true }
                         },
                         "default"             : {}
                     }
                 },
-                "description": "TYY Seedance20Fast 用户输入；HTTP(S) 素材，首尾帧与普通参考互斥。素材可访问性、大小、编码、尺寸与实际时长需运行时校验。",
-                "anyOf": [
+                "description"         : "TYY Seedance20Fast 用户输入；HTTP(S) 素材，首尾帧与普通参考互斥。素材可访问性、大小、编码、尺寸与实际时长需运行时校验。",
+                "anyOf"               : [
                     { "required": ["prompt"] },
                     {
                         "required"  : ["input_references"],
@@ -371,9 +400,9 @@
                 "type"      : "object",
                 "required"  : ["code", "message", "data"],
                 "properties": {
-                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"       },
-                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"},
-                    "data"   : {"type": "null",   "description": "无任务数据"                                  }
+                    "code"   : {"type": "string", "description": "错误标识，例如 plugin_request_invalid"},
+                    "message": {"type": "string", "description": "具体输入校验错误，可能包含插件版本与参数路径"        },
+                    "data"   : {"type": "null",   "description": "无任务数据"                         }
                 }
             }
         }
@@ -384,7 +413,7 @@
                 "tags": ["TYY 视频"],
                 "operationId": "createTyySeedance20Fast",
                 "summary": "TYY Seedance 2.0 Fast 视频生成",
-                "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。 任务完成后，推荐使用查询结果中的 url 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
+                "description": "使用 JSON 提交异步视频任务。保存响应 id，使用同一 API 密钥查询任务和下载产物。 任务完成后，使用查询结果中的 url_path 下载视频；相对路径需拼接 API 服务地址，并携带同一 API 密钥。",
                 "requestBody": {
                     "required": true,
                     "content" : {
@@ -447,7 +476,7 @@
                 "responses": {
                     "200": {
                         "description": "视频任务对象；通过 status 区分生成中、成功和任务失败。任务失败仍使用此响应结构。",
-                        "content": {
+                        "content"    : {
                             "application/json": {
                                 "schema"  : {"$ref": "#/components/schemas/VideoTask"},
                                 "examples": {
@@ -466,15 +495,17 @@
                                     "completed" : {
                                         "summary": "成功",
                                         "value"  : {
-                                            "id"            : "video_example",
-                                            "object"        : "video",
-                                            "model"         : "tyy-seedance-2-0-fast-260807",
-                                            "status"        : "completed",
-                                            "progress"      : 100,
-                                            "created_at"    : 1793851200,
-                                            "error"         : null,
-                                            "completed_at"  : 1793851260,
-                                            "url"           : "/v1/videos/video_example/content",
+                                            "id": "video_example",
+                                            "object": "video",
+                                            "model": "tyy-seedance-2-0-fast-260807",
+                                            "status": "completed",
+                                            "progress": 100,
+                                            "created_at": 1793851200,
+                                            "error": null,
+                                            "completed_at": 1793851260,
+                                            "url_path": "/v1/videos/video_example/content",
+                                            "url": "/v1/videos/video_example/content",
+                                            "url_path_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content",
                                             "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
                                         }
                                     },
@@ -501,8 +532,8 @@
                                 "schema"  : {"$ref": "#/components/schemas/VideoRequestError"},
                                 "examples": {
                                     "invalid_input": {
-                                        "summary": "输入错误",
-                                        "value": {
+                                        "summary"    : "输入错误",
+                                        "value"      : {
                                             "code": "plugin_request_invalid",
                                             "message": "plugin gxc@0.11.0-test3 hook buildSubmitRequest failed: Error: 输入错误，Invalid video request: /seconds must be <= 30; /resolution must be equal to one of the allowed values at assertValid (gxc.js:4918:11)",
                                             "data": null

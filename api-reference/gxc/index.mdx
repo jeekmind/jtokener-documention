@@ -68,7 +68,7 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
 
 使用提交时的同一 API 密钥查询和下载。查询响应始终包含 `error`，没有错误或任务成功时为 `null`；有失败原因时为 `{ "message": "失败原因" }`。
 
-当 `status` 为 `completed` 时，响应包含 `url`。如果你设置 `options.return_last_frame: true` 且模型返回尾帧，响应还包含 `url_last_frame`。任务未成功或没有尾帧时，不返回对应下载路径。
+当 `status` 为 `completed` 时，响应包含 `url_path`。如果你设置 `options.return_last_frame: true` 且模型返回尾帧，响应还包含 `url_path_last_frame`。任务未成功或没有尾帧时，不返回对应下载路径。
 
 这两个字段均为相对路径。将路径拼接到你的 API 服务地址后，携带 `Authorization: Bearer YOUR_API_KEY` 下载。
 
@@ -92,7 +92,7 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
   </Tab>
   <Tab title="成功">
 
-`status` 为 `completed` 时，推荐使用查询结果中的 `url` 下载视频。以下示例包含尾帧；没有尾帧时省略 `url_last_frame`。
+`status` 为 `completed` 时，推荐使用查询结果中的 `url_path` 下载视频。以下示例包含尾帧；没有尾帧时省略 `url_path_last_frame` 和 `url_last_frame`。
 
 ```json
 {
@@ -104,7 +104,9 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
   "created_at": 1793851200,
   "error": null,
   "completed_at": 1793851260,
+  "url_path": "/v1/videos/video_example/content",
   "url": "/v1/videos/video_example/content",
+  "url_path_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content",
   "url_last_frame": "/v1/tasks/video_example/artifacts/last_frame/content"
 }
 ```
@@ -161,8 +163,10 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
 | `progress` | integer | 完成进度，示例为 `100` |
 | `completed_at` | integer | 完成时间，Unix 秒级时间戳 |
 | `error` | null | 固定为 `null` |
-| `url` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
-| `url_last_frame` | string | 可选，有尾帧时返回；认证方式同视频下载 |
+| `url_path` | string | 视频下载相对路径，拼接 API 服务地址后携带同一 API 密钥下载 |
+| `url_path_last_frame` | string | 可选，有尾帧时返回；认证方式同视频下载 |
+| `url` | string | 已弃用，兼容字段，值与 `url_path` 相同 |
+| `url_last_frame` | string | 已弃用，有尾帧时返回，值与 `url_path_last_frame` 相同 |
 
   </Tab>
   <Tab title="错误">
@@ -181,19 +185,19 @@ GXC 渠道提供 Seedance 系列视频模型。你可以在**模型调用文档*
   </Tab>
 </Tabs>
 
-生成中和错误响应不返回 `url` 或 `url_last_frame`。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
+生成中和错误响应不返回下载字段（包括兼容字段）。`unknown` 表示状态未知，使用同一任务 ID 继续查询；有错误原因时可读取 `error.message`。
 
 ### 下载示例
 
 ```bash
-# 将 VIDEO_URL 设置为查询结果中的 url，保留返回的完整路径
+# 将 VIDEO_URL 设置为查询结果中的 url_path，保留返回的完整路径
 API_BASE_URL='https://tokener.jeekmind.com'
 VIDEO_URL='/v1/videos/video_example/content'
 curl "${API_BASE_URL}${VIDEO_URL}" \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -o video.mp4
 
-# 将 LAST_FRAME_URL 设置为查询结果中的 url_last_frame（仅有尾帧时可用）
+# 将 LAST_FRAME_URL 设置为查询结果中的 url_path_last_frame（仅有尾帧时可用）
 LAST_FRAME_URL='/v1/tasks/video_example/artifacts/last_frame/content'
 curl "${API_BASE_URL}${LAST_FRAME_URL}" \
   -H 'Authorization: Bearer YOUR_API_KEY' \
