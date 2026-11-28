@@ -69,7 +69,6 @@
                             {
                                 "group": "开发中文档",
                                 "pages": [
-                                    "api-reference/logs/self",
                                     "api-reference/images/generations-async",
                                     "api-reference/images/tasks",
                                     "api-reference/bana/gpt-image-26"
